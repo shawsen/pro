@@ -1,0 +1,6 @@
+/* base.css (c) mawentao */
+@import url(css/global.css);
+@import url(frame/main.css);
+@import url(common/posnav.css);
+
+@import url(view/index/index.css);

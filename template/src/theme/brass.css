@@ -1,0 +1,15 @@
+/* brass style (autoneum) */
+#header {border-bottom-color:#fff;background:#333;}
+.menu li.active a, .menu li:hover a, .submenudiv a:hover {color:#A8B301;}
+.userbtn {color:#A8B301;}
+.userbtn:hover,.posul li a:hover {color:#A8B301;}
+.submenudiv {border-color:#D6DC6D;}
+.btn {background:#A8B301;}
+.btn:hover {background-color:#B8C400;color:#fff;}
+.leftmenu a:hover, .leftmenu a.active {background:#D6DC6D;color:#6D7700;}
+.mwt-layout-border-split-horizontal, .mwt-layout-border-split-vertical {background:#eee;}
+.mwt-dialog .login-modaldiv {background:#ccc;}
+.mwt-btn-primary {background:#A8B301;border-color:#A8B301;}
+.mwt-btn-primary:hover {background-color:#B8C400;border-color:#B8C400;}
+.mwt-field:focus {border-color:#D6DC6D;box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(205,220,57,.6);}
+

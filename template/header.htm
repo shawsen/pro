@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <title><!--{$setting[page_title]}--></title>
+  <link rel="icon" type="image/png" href="{$setting[favicon]}">
+  <link type="text/css" rel="stylesheet" href="$pluginPath/template/libs/jquery-ui/jquery-ui.min.css">
+  <link type="text/css" rel="stylesheet" href="$pluginPath/template/libs/mwt/4.0/mwt.min.css">
+  <link type="text/css" rel="stylesheet" href="$pluginPath/template/src/base.css">
+  <link type="text/css" rel="stylesheet" href="$pluginPath/template/src/theme/{$page_style}.css">
+  <script type="text/javascript" src="$pluginPath/template/libs/jquery/1.11.2/jquery.min.js"></script>
+  <script type="text/javascript" src="$pluginPath/template/libs/jquery/jquery.cookie.js"></script>
+  <script type="text/javascript" src="$pluginPath/template/libs/mwt/4.0/mwt.min.js"></script>
+  <script type="text/javascript" src="$pluginPath/template/libs/requirejs/2.1.9/require.js"></script>
+  <script type="text/javascript" src="$pluginPath/template/src/japp.js" charset="utf-8"></script>
+</head>
+<body>
+
+  <div id="header">
+    <a class="logo" href="#/">
+      <img src="{$setting[logourl]}">
+      <span class="title"><!--{$setting[page_title]}--></span>
+    </a>
+    <ul class="langul">
+	  <li style="color:#aaa;font-size:12px;padding:2px 2px;">●</li>
+	  <li><a href="javascript:langChoice.set('zh');">中文</a></li>
+	  <li style="color:#aaa;font-size:12px;padding:2px 2px;">●</li>
+	  <li><a href="javascript:langChoice.set('en');">English</a></li>
+	</ul>
+    <div class="nav">
+      <ul class="menu">
+        <li name="nav-menu-li" data-mod="index"><a href="#/"><!--{$lang[nav_home]}--></a></li>
+		<!--{if $_G[groupid]==1}-->
+        <li class="sep"></li>
+		<li name="nav-menu-li" data-mod="purcherctl"><a href="#/purcherctl">[ {$lang[nav_purcherctl]} ]</a></li>
+        <!--{/if}-->
+		<!--{if $_G[groupid]>1}-->
+        <li class="sep"></li>
+		<li name="nav-menu-li" data-mod="supplierctl"><a href="#/supplierctl">[ {$lang[nav_supplierctl]} ]</a></li>
+        <!--{/if}-->
+      </ul>
+      <!--{if $_G[uid]!=0}-->
+		<a href="plugin.php?id=bazi:console#/uc" class="userbtn"><i class="icon icon-contact"></i><!--{$_G[username]}--></a>
+		<div class="submenudiv">
+		  <ul>
+			<li><a href="{$ajaxapi}uc&action=logout"><!--{$lang[logout]}--></a></li>
+		  </ul>
+		</div>
+      <!--{else}-->
+	    <a href="#/login" id="login-btn" class="btn"><!--{$lang[login]}--></a>
+	    <a href="#/regist" id="regist-btn" class="btn"><!--{$lang[regist]}--></a>
+      <!--{/if}-->
+    </div>
+  </div>
+
+  <div id="frame-body"></div>
+
+  <script type="text/javascript">
+    var dz = {
+	    // 基础信息
+	    controller : '{$controller}',
+        siteurl    : '{$_G['siteurl']}',
+        pluginpath : '$pluginPath',
+        ajaxapi    : '{$ajaxapi}',
+        seccodeurl : '{$ajaxapi}seccode',
+        logouturl  : '{$ajaxapi}logout',
+        // 配置信息
+        page_copyright: "{$setting['page_copyright']}",
+        // 用户信息
+        uid      : $_G[uid],
+        groupid  : $_G[groupid],
+        username : '$_G['username']',
+        avatar   : '{avatar($_G['uid'],'',true)}'
+    };
+	console.log(dz);
+    function active_top_nav(mod) {
+		jQuery('[name="nav-menu-li"]').removeClass('active');
+		jQuery('[data-mod="'+mod+'"]').addClass('active');
+	}
+	// 语言选择
+	var langChoice= {
+		get: function() {
+			var v = jQuery.cookie('pro-lang');	
+			if (!v) {
+				v = 'zh';
+				jQuery.cookie('pro-lang',v);
+			}
+			return v;
+		},
+		set: function(lan) {
+			jQuery.cookie('pro-lang',lan);
+			window.location.reload();
+		}
+	};
+	// 语言包
+	var lang = <!--{echo json_encode($lang)}-->;
+  </script>
+
