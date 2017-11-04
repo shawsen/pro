@@ -18,15 +18,31 @@ define(function(require){
         var code = '<ul class="mwt-nav mwt-nav-tabs">'+
                 tabcode.join('')+
                 '<li style="float:right">'+
-                    '<button onclick="window.location=\'#/requirectl/newpr\'" class="mwt-btn mwt-btn-primary mwt-btn-sm radius">'+
+                    '<button id="newpr-'+domid+'" class="mwt-btn mwt-btn-primary mwt-btn-sm radius">'+
                         '<i class="sicon-plus" style="vertical-align:middle;"></i> 新建PR单'+
                     '</button>'+
                 '</li>'+
             '</ul>'+
             '<div id="grid-'+domid+'" class="mwt-layout-fill" style="top:40px;"></div>';
         jQuery('#'+domid).html(code);
+        jQuery('#newpr-'+domid).unbind('click').click(newpr);
 		require('./grid').init('grid-'+domid,state);
 	};
+
+    // 新建PR单
+    function newpr() {
+        var msgid=mwt.notify('正在创建PR单...',0,'loading');
+        setTimeout(function(){
+            ajax.post('requirectl&action=prCreate',{},function(res){
+                mwt.notify_destroy(msgid);
+                if (res.retcode!=0) {
+                    require('common/msg').showException(render,res.retmsg);
+                } else {
+                    window.location = '#/requirectl/pr~prid='+res.data;
+                }
+            });
+        },1000);
+    };
 
 	return o;
 });

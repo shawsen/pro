@@ -9,14 +9,13 @@ define(function(require){
 	o.conf = {
 		controller: control,
 		path: [
+			'/'+control+'/pr',
 			'/'+control+'/myprs',
-			'/'+control+'/newpr',
 			'/'+control+'/index'
 		],
 		// 左部菜单
 		menu: [
 			{name:'PR单', icon:'icon icon-reply', submenu:[
-				{name:'新建PR单',icon:'icon icon-ask',action:'newpr'},
 				{name:'我的PR单',icon:'icon icon-reply',action:'myprs'}
 			]},
 		]
@@ -45,14 +44,26 @@ define(function(require){
 		require('view/requirectl/myprs/page').execute('requirectl_myprs_div',prstate);
 	};
 
-	// 新建PR单
-	o.newprAction=function(erurl) {
+	// PR单
+	o.prAction=function(erurl) {
 		before_action();
         var query=erurl.getQuery();
-		var code = posnav.get("新建PR单")+
+        var prid=query.prid ? query.prid : '';
+        if (prid=='') {
+            window.location='#/'+control+'/myprs';
+            return;
+        }
+        require('form/PRForm').create({
+            render : 'frame-center',
+            formid : prid,
+            print  : false
+        }).init();
+/*
+		var code = posnav.get('PR单')+
 			'<div id="requirectl_newpr_div" class="ctlgrid"></div>';
 		frame.showpage(code);
-		require('view/requirectl/prform/page').execute('requirectl_newpr_div');
+//		require('view/requirectl/prform/page').execute('requirectl_newpr_div');
+*/
 	};
 
 	return o;

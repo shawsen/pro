@@ -7,6 +7,7 @@ if(!defined('IN_DISCUZ')) {
  **/
 class model_pro_pr
 {
+    // 获取PR详情
     public function getPRDetail($prid)
     {
         global $_G;
@@ -16,7 +17,10 @@ class model_pro_pr
         if (empty($pr) || $pr['isdel']!=0) {
             throw new Exception('PR单不存在或已删除');
         }
-        //2. PR项目列表
+        $pr['prid_code'] = C::m('#pro#pro_authcode')->encodeID($prid);
+        //2. 创建者信息
+        $pr['creatorInfo'] = C::m('#pro#pro_profile')->getByUid($pr['create_uid']);
+        //3. PR项目列表
         $pr['items'] = C::t('#pro#pro_pr_items')->getAllByPrid($prid);
         return $pr;
     }

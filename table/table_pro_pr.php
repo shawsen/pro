@@ -54,9 +54,11 @@ EOF;
     {/*{{{*/
         global $_G;
         $uid = $_G['uid'];
+        $username = $_G['username'];
+        $prname = $username."采购申请单".date('YmdHi');
         $status = 1;
         $data = array (
-            'prname' => pro_validate::getNCParameter('prname','prname','string',128),
+            'prname' => $prname,
             'status' => $status,
             'create_uid' => $uid,
             'ctime' => date('Y-m-d H:i:s'),
@@ -69,7 +71,7 @@ EOF;
         }
         $log = $_G['username']." 新建了PR单[$prid]";
         C::t('#pro#pro_pr_log')->write($prid,$status,$log);
-        return $prid;
+        return C::m('#pro#pro_authcode')->encodeID($prid);
     }/*}}}*/
 
     // 提交PR单

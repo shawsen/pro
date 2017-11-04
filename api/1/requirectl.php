@@ -52,7 +52,8 @@ function prSubmit(){return C::t('#pro#pro_pr')->submit();}
 function prCancel(){return C::t('#pro#pro_pr')->submitCancel();}
 function prDetail()
 {
-    $prid = pro_validate::getNCParameter('prid','prid','integer');
+    $prid = pro_validate::getNCParameter('prid','prid','string');
+    $prid = C::m('#pro#pro_authcode')->decodeID($prid);
     return C::m('#pro#pro_pr')->getPRDetail($prid);
 }
 

@@ -35,8 +35,9 @@ var dz = {
     avatar   : '{avatar($_G['uid'],'',true)}',
     auth     : {$auth}
 };
-var form="pr";
+var form="{$form}";
 var lang = <!--{echo json_encode($lang)}-->;
+var ajax,log;
 jQuery(document).on('ready',function(){
     require.config({
         baseUrl: '{$pluginPath}/template/src/',
@@ -46,9 +47,11 @@ jQuery(document).on('ready',function(){
         ]
     });
     require(['jappengine','core/log','core/ajax','form/PrForm'], function(jappengine,corelog,coreajax,PrForm){
+        ajax=coreajax;
+        log=corelog;
         var opts = {
             render : 'formdiv',
-            formid : 0,
+            formid : '{$formid}',
             print  : true
         };
         switch(form) {

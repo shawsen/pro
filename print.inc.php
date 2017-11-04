@@ -6,6 +6,9 @@ require_once dirname(__FILE__)."/class/env.class.php";
 include_once dirname(__FILE__)."/lang/lang.inc.php";
 
 
+$form = $_GET['form'] ? $_GET['form'] : '';
+$formid = $_GET['formid'] ? $_GET['formid'] : '';
+
 // 用户权限
 $uid = $_G['uid'];
 $auth = $uid==0 ? 0 : C::t('#pro#pro_auth')->getByUid($uid);
