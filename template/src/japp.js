@@ -24,3 +24,18 @@ var JApp=function(baseUrl)
         });
     };
 };
+
+
+// 
+function timeRender(v) {
+    var st = strtotime(v);
+    return '<span style="color:gray">'+date('Y/m/d H:i',st)+'</span>';
+}
+
+function prStateRender(v) {
+    switch(parseInt(v)) {
+        case 1: return '<span style="color:#333;">未提交</span>';
+        case 2: return '<span style="color:blue;">已提交</span>'
+    }
+    return v;
+}

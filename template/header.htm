@@ -17,20 +17,19 @@
   <script type="text/javascript" src="$pluginPath/template/src/japp.js" charset="utf-8"></script>
 </head>
 <body>
-
   <div id="header">
     <a class="logo" href="#/">
       <img src="{$setting[logourl]}">
       <span class="title"><!--{$setting[page_title]}--></span>
     </a>
-    <ul class="langul">
+    <ul class="langul" style="display:none;">
 	  <li style="color:#aaa;font-size:12px;padding:2px 2px;">●</li>
 	  <li><a href="javascript:langChoice.set('zh');">中文</a></li>
 	  <li style="color:#aaa;font-size:12px;padding:2px 2px;">●</li>
 	  <li><a href="javascript:langChoice.set('en');">English</a></li>
 	</ul>
     <div class="nav">
-      <ul class="menu">
+      <ul class="menu" style="display:none;">
         <li name="nav-menu-li" data-mod="index"><a href="#/"><!--{$lang[nav_home]}--></a></li>
 		<!--{if $_G[groupid]==1}-->
         <li class="sep"></li>
@@ -68,11 +67,13 @@
         logouturl  : '{$ajaxapi}logout',
         // 配置信息
         page_copyright: "{$setting['page_copyright']}",
+        logo : "{$setting['logourl']}",
         // 用户信息
         uid      : $_G[uid],
         groupid  : $_G[groupid],
         username : '$_G['username']',
-        avatar   : '{avatar($_G['uid'],'',true)}'
+        avatar   : '{avatar($_G['uid'],'',true)}',
+        auth     : {$auth}
     };
 	console.log(dz);
     function active_top_nav(mod) {

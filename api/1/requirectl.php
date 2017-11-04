@@ -3,7 +3,7 @@ if (!defined('IN_EBID_API')) {
     exit('Access Denied');
 }
 /**
- * 采购员API
+ * 普通用户API
  **/
 require './source/class/class_core.php';
 $discuz = C::app();
@@ -13,18 +13,22 @@ require_once EBID_PLUGIN_PATH."/class/env.class.php";
 ////////////////////////////////////
 // action的用户组列表（空表示全部用户组）
 $actionlist = array(
-	'addrQuery' => array(),   //!< 地址管理查询接口
+	'prQuery'  => array(),  //!< PR单列表查询
+    'prCreate' => array(),  //!< 创建PR单
+    'prSubmit' => array(),  //!< 提交PR单
+    'prCancel' => array(),  //!< 撤销PR单
+    'prDetail' => array(),  //!< PR单详情
 );
 ////////////////////////////////////
-$uid = $_G['uid'];
+$uid      = $_G['uid'];
 $username = $_G['username'];
-$groupid = $_G["groupid"];
-$action = isset($_GET['action']) ? $_GET['action'] : "get";
+$groupid  = $_G["groupid"];
+$action   = isset($_GET['action']) ? $_GET['action'] : "get";
 
 try {
     //////////////////////////////////////////////////
     $auth = C::t('#pro#pro_auth')->getByUid($uid);
-    if ($auth!=2) {
+    if ($auth!=1) {
         throw new Exception("permission denied");
     }
     //////////////////////////////////////////////////
@@ -41,8 +45,16 @@ try {
     pro_env::result(array('retcode'=>100010,'retmsg'=>$e->getMessage()));
 }
 
-// 地址管理
-function addrQuery(){return C::t('#pro#pro_address')->query();}
+// PR单
+function prQuery(){return C::t('#pro#pro_pr')->queryByCreator();}
+function prCreate(){return C::t('#pro#pro_pr')->create();}
+function prSubmit(){return C::t('#pro#pro_pr')->submit();}
+function prCancel(){return C::t('#pro#pro_pr')->submitCancel();}
+function prDetail()
+{
+    $prid = pro_validate::getNCParameter('prid','prid','integer');
+    return C::m('#pro#pro_pr')->getPRDetail($prid);
+}
 
 
 // vim600: sw=4 ts=4 fdm=marker syn=php

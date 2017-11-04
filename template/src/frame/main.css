@@ -1,5 +1,5 @@
 /* 框架样式 */
-#frame-body {position:absolute;top:69px;left:0;right:0;bottom:0;}
+#frame-body {position:absolute;top:50px;left:0;right:0;bottom:0;}
 #frame-west {background:#f4f4f4;border-right:solid 1px #fff;}
 #frame-center {background:#fff;}
 

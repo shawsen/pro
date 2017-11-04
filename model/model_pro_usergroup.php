@@ -4,9 +4,9 @@ if(!defined('IN_DISCUZ')) {
 }
 /**
  * 用户组模块
- * C::m('#ebid#ebid_usergroup')->func()
+ * C::m('#pro#pro_usergroup')->func()
  **/
-class model_ebid_usergroup
+class model_pro_usergroup
 {
 	private $groupmap = array();
 

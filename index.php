@@ -7,8 +7,9 @@ define("EBID_PLUGIN_PATH", dirname(__FILE__));
 chdir("../../../");
 
 $modules = array (
-	'purcherctl',   //!< 供应商管理后台API
-    'seccode','uc',
+    'requirectl',   //!< 普通用户API
+	'purcherctl',   //!< 采购员API
+    'seccode','uc','admin',
 );
 
 if(!in_array($_GET['module'], $modules)) {

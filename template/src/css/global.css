@@ -13,11 +13,11 @@
 }
 body {background:#fff;}
 /* Logo */
-#header {height:69px;border-bottom:solid 1px #ddd;background-color:#fff;}
-.logo {float:left;display:inline-block;height:69px;line-height:69px;padding-left:20px;color:#999;text-decoration:none;}
-.logo img {height:28px;float:left;margin:20px 15px 0 0;} 
-.logo .title {font:16px 'heiti';display:inline-block;border-left:solid 1px #ddd;padding-left:10px;color:#7f8286;
-	white-space:nowrap;line-height:30px;}
+#header {height:50px;border-bottom:solid 1px #ddd;background-color:#fff;}
+.logo {float:left;display:inline-block;height:50px;line-height:50px;padding-left:10px;color:#999;text-decoration:none;}
+.logo img {height:20px;float:left;margin:15px 15px 0 0;} 
+.logo .title {font:15px 'heiti';display:inline-block;border-left:solid 1px #ddd;padding-left:14px;color:#fff;
+	white-space:nowrap;line-height:24px;}
 /* 语言选择 */
 .langul {display:inline-block;margin:0 0 0 10px;padding:0;}
 .langul li {list-style-type:none;padding:0;float:left;}
@@ -25,8 +25,8 @@ body {background:#fff;}
 .langul li a:hover {color:red;}
 
 /* 导航菜单 */
-#header .nav {float:right;display:inline-block;height:69px;padding-right:20px;}
-.menu {margin:0 10px 0 0;padding:0;display:inline-block;height:69px;vertical-align:middle;}
+#header .nav {float:right;display:inline-block;height:50px;padding-right:20px;}
+.menu {margin:0 10px 0 0;padding:0;display:inline-block;height:50px;vertical-align:middle;}
 .menu li {list-style-type:none;margin:1px 5px;padding:0;float:left;line-height:67px;position:relative;}
 .menu li a {text-decoration:none;color:#fff;font-size:14px;display:block;padding:0 5px;color:#aaa;}
 .menu li a::before {

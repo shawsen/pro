@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <title><!--{$setting[page_title]}--></title>
+  <link rel="icon" type="image/png" href="{$setting[favicon]}">
+  <link type="text/css" rel="stylesheet" href="$pluginPath/template/libs/jquery-ui/jquery-ui.min.css">
+  <link type="text/css" rel="stylesheet" href="$pluginPath/template/libs/mwt/4.0/mwt.min.css">
+  <link type="text/css" rel="stylesheet" href="$pluginPath/template/src/base.css">
+  <link type="text/css" rel="stylesheet" href="$pluginPath/template/src/theme/{$page_style}.css">
+  <script type="text/javascript" src="$pluginPath/template/libs/jquery/1.11.2/jquery.min.js"></script>
+  <script type="text/javascript" src="$pluginPath/template/libs/jquery/jquery.cookie.js"></script>
+  <script type="text/javascript" src="$pluginPath/template/libs/mwt/4.0/mwt.min.js"></script>
+  <script type="text/javascript" src="$pluginPath/template/libs/requirejs/2.1.9/require.js"></script>
+  <script type="text/javascript" src="$pluginPath/template/src/japp.js" charset="utf-8"></script>
+</head>
+<body>
+<div id="formdiv"></div>
+<script>
+var dz = {
+    // 基础信息
+    siteurl    : '{$_G['siteurl']}',
+    pluginpath : '$pluginPath',
+    ajaxapi    : '{$ajaxapi}',
+    logouturl  : '{$ajaxapi}logout',
+    // 配置信息
+    page_copyright: "{$setting['page_copyright']}",
+    logo : "{$setting['logourl']}",
+    // 用户信息
+    uid      : $_G[uid],
+    groupid  : $_G[groupid],
+    username : '$_G['username']',
+    avatar   : '{avatar($_G['uid'],'',true)}',
+    auth     : {$auth}
+};
+var form="pr";
+var lang = <!--{echo json_encode($lang)}-->;
+jQuery(document).on('ready',function(){
+    require.config({
+        baseUrl: '{$pluginPath}/template/src/',
+        packages: [
+            {name:'lang', location:'lang', main:'main'},
+            {name:'frame', location:'frame', main:'main'}
+        ]
+    });
+    require(['jappengine','core/log','core/ajax','form/PrForm'], function(jappengine,corelog,coreajax,PrForm){
+        var opts = {
+            render : 'formdiv',
+            formid : 0,
+            print  : true
+        };
+        switch(form) {
+            case 'pr': PrForm.create(opts).init(); break;
+        }
+    });
+});
+</script>
+</body>
+</html>
