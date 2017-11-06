@@ -33,7 +33,7 @@ define(function(require){
 				{head:"状态",dataIndex:"status",width:100,align:'center',render:prStateRender},
                 
 				{head:"", dataIndex:"prid",width:120,align:'center',render:function(v,item){
-					var editbtn = '<a class="grida" href="javascript:;" '+
+					var editbtn = '<a class="grida" href="#/requirectl/pr~prid='+item.prid_code+'" '+
 							'name="editbtn" data-id="'+v+'">编辑</a>';
                     var submitbtn = '<a class="grida" href="javascript:;" '+
 							'name="submitbtn" data-id="'+v+'">提交</a>';

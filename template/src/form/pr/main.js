@@ -15,37 +15,9 @@ function PRForm(opts)
 		if(opts.readonly) readonly=1;
     }
 
-	function getItemList() {
-		/*store = new mwt.Store({
-    		proxy: new mwt.MemoryProxy({
-				data: []
-    		})
-		});*/
-		
-
-		var op = readonly ? '' : '<th></th>';
-/*
-		var lis = [];
-		lis.push('<tr>'+
-			'<th>序号</td>'+
-			'<th>产品</th>'+
-			'<th style="text-align:right;">数量</th>'+
-			'<th>单位</th>'+
-			'<th style="text-align:right;">单价</th>'+
-			'<th>币种</th>'+
-			'<th>总价</th>'+
-		'</tr>');
-		return lis;
-*/
-	};
-
-
     function showFrom() {
         var ct = strtotime(data.ctime);
         var cdate = date('Y/m/d',ct);
-		var items = getItemList();
-		var colsn = items[0].length;
-
         var code = '<div class="formdiv">'+
             '<img class="formlogo" src="'+dz.logo+'">'+
             '<h1>采购申请单 (Purchasing Requisition Form)</h1>'+
@@ -82,9 +54,26 @@ function PRForm(opts)
             code += '<a href="'+dz.siteurl+'/plugin.php?id=pro:print&form=pr&formid='+prid+'" '+
                     'class="mwt-btn mwt-btn-default mwt-btn-sm" target="_blank">打印</a>';
         }
+		if (!readonly) {
+            code += '<a href="javascript:;" id="save-'+render+'"'+
+                    'class="mwt-btn mwt-btn-default mwt-btn-sm" target="_blank">保存</a>';
+		}
         jQuery('#'+render).html(code);
-    }
+		require('./grid').show('ims-'+render,data,readonly);
+		// 保存
+		jQuery('#save-'+render).unbind('click').click(function(){
+			var items = require('./grid').getItems('ims-'+render);
+			var params = {
+				prid  : data.prid,
+				items : items
+			};
+			ajax.post('requirectl&action=prSave',params,function(res){
+				if (res.retcode!=0) mwt.notify(res.retmsg,1500,'danger');
+				else mwt.notify('已保存',1500,'success');
+			});
 
+		});
+    }
     
     this.init = function() {
         try {

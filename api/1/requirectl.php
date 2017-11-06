@@ -18,6 +18,7 @@ $actionlist = array(
     'prSubmit' => array(),  //!< 提交PR单
     'prCancel' => array(),  //!< 撤销PR单
     'prDetail' => array(),  //!< PR单详情
+    'prSave'   => array(),  //!< 保存PR单
 );
 ////////////////////////////////////
 $uid      = $_G['uid'];
@@ -48,6 +49,7 @@ try {
 // PR单
 function prQuery(){return C::t('#pro#pro_pr')->queryByCreator();}
 function prCreate(){return C::t('#pro#pro_pr')->create();}
+function prSave()  {return C::t('#pro#pro_pr')->save();}
 function prSubmit(){return C::t('#pro#pro_pr')->submit();}
 function prCancel(){return C::t('#pro#pro_pr')->submitCancel();}
 function prDetail()

@@ -46,6 +46,14 @@ EOF;
         $return["root"] = DB::fetch_all($sql);
         $row = DB::fetch_first("SELECT FOUND_ROWS() AS total");
         $return["totalProperty"] = $row["total"];
+		///////////////////////////////////////////
+		// id encode
+		if (!empty($return["root"])) {
+			foreach ($return["root"] as &$row) {
+				$row['prid_code'] = C::m('#pro#pro_authcode')->encodeID($row['prid']);
+			}
+		}
+		///////////////////////////////////////////
         return $return;
 	}/*}}}*/
 
@@ -72,6 +80,38 @@ EOF;
         $log = $_G['username']." 新建了PR单[$prid]";
         C::t('#pro#pro_pr_log')->write($prid,$status,$log);
         return C::m('#pro#pro_authcode')->encodeID($prid);
+    }/*}}}*/
+
+	// 保存PR单
+	public function save()
+    {/*{{{*/
+        global $_G;
+        $uid = $_G['uid'];
+        $prid = pro_validate::getNCParameter('prid','prid','integer');
+        // op secure check
+        $item = $this->get_by_pk($prid);
+        if (empty($item) || $item['isdel']!=0) {
+            throw new Exception("PR单不存在或已删除");
+        }
+        if ($item['create_uid']!=$uid) {
+            throw new Exception("你不能保存此PR单");
+        }
+        if ($item['status']!=1) {
+            throw new Exception("此PR单已提交，不可编辑");
+        }
+        // op
+		C::t('#pro#pro_pr_items')->saveBatch();
+/*
+        $data = array (
+            'status' => $status,
+            'submit_time' => date('Y-m-d H:i:s'),
+        );
+        $this->update($prid,$data);
+*/
+        // log
+        $log = $_G['username']." 保存了PR单[$prid]";
+        C::t('#pro#pro_pr_log')->write($prid,$status,$log);
+        return $prid;
     }/*}}}*/
 
     // 提交PR单

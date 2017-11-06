@@ -53,7 +53,7 @@ define(function(require){
             window.location='#/'+control+'/myprs';
             return;
         }
-        require('form/PRForm').create({
+        require('form/pr/main').create({
             render : 'frame-center',
             formid : prid,
             print  : false

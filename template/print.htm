@@ -46,7 +46,7 @@ jQuery(document).on('ready',function(){
             {name:'frame', location:'frame', main:'main'}
         ]
     });
-    require(['jappengine','core/log','core/ajax','form/PrForm'], function(jappengine,corelog,coreajax,PrForm){
+    require(['jappengine','core/log','core/ajax','form/pr/main'], function(jappengine,corelog,coreajax,PRForm){
         ajax=coreajax;
         log=corelog;
         var opts = {
@@ -55,7 +55,7 @@ jQuery(document).on('ready',function(){
             print  : true
         };
         switch(form) {
-            case 'pr': PrForm.create(opts).init(); break;
+            case 'pr': PRForm.create(opts).init(); break;
         }
     });
 });
