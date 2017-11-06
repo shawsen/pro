@@ -4,9 +4,9 @@ if(!defined('IN_DISCUZ')) {
 }
 /**
  * 用户登录,注册,注销模块
- * C::m('#ebid#ebid_uc')->func()
+ * C::m('#pro#pro_uc')->func()
  **/
-class model_ebid_uc
+class model_pro_uc
 {
 	// 退出登录
 	public function logout()

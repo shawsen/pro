@@ -6,9 +6,18 @@ require_once dirname(__FILE__)."/class/env.class.php";
 include_once dirname(__FILE__)."/lang/lang.inc.php";
 
 
+// 登录检查
+if(!$_G['uid']){
+	$login = pro_env::get_siteurl()."/member.php?mod=logging&action=login";
+    header("Location: $login");
+    exit();
+}
+
 // 用户权限
 $uid = $_G['uid'];
 $auth = $uid==0 ? 0 : C::t('#pro#pro_auth')->getByUid($uid);
+
+
 
 // 设置
 $setting = C::m('#pro#pro_setting')->get();
