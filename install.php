@@ -51,6 +51,105 @@ runquery($sql);
 runquery("ALTER TABLE `$table` ENGINE=INNODB");
 /*}}}*/
 
+// 人事组织关系表
+$table = DB::table('pro_user_organization');
+/*{{{*/ 
+$sql = "CREATE TABLE IF NOT EXISTS $table ". <<<EOF
+(
+`uid` mediumint(8) unsigned NOT NULL DEFAULT '0' COMMENT '用户ID',
+`realname` varchar(32) NOT NULL DEFAULT '' COMMENT '真实姓名',
+`enname` varchar(32) NOT NULL DEFAULT '' COMMENT '英文名',
+`group_name` varchar(32) NOT NULL DEFAULT '' COMMENT '所属部门',
+`supervisor_uid` mediumint(8) unsigned NOT NULL DEFAULT '0' COMMENT '直接上级',
+`ctime` datetime NOT NULL DEFAULT "0000-00-00 00:00:00" comment '创建日期',
+`mtime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间', 
+`isdel` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '删除标志(0:未删,1:已删)',
+PRIMARY KEY (`uid`),
+KEY `idx_supervisor_uid_isdel` (`supervisor_uid`,`isdel`)
+) ENGINE=MyISAM COMMENT '人事组织关系表'
+EOF;
+runquery($sql);
+$sql = "INSERT IGNORE INTO $table (uid,realname,enname,group_name,supervisor_uid,ctime) VALUES ".
+       "(1,'李明','Li Ming','采购部',1,'$addtime')";
+runquery($sql);
+/*}}}*/
+
+// 审批流程表
+$table = DB::table('pro_progress');
+/*{{{*/ 
+$sql = "CREATE TABLE IF NOT EXISTS $table ". <<<EOF
+(
+`pgid` bigint unsigned NOT NULL AUTO_INCREMENT COMMENT '流程号(自增主键)',
+`module` varchar(32) NOT NULL DEFAULT '' COMMENT '关联的模块(如PR,PO)',
+`module_id` varchar(128) NOT NULL DEFAULT '' COMMENT '关联的模块ID(如prid,poid)',
+`origin_uid` mediumint(8) unsigned NOT NULL DEFAULT '0' COMMENT '流程发起人uid',
+`progress_title` varchar(128) NOT NULL DEFAULT '' COMMENT '流程标题',
+`status` tinyint(3) NOT NULL DEFAULT '1' COMMENT '状态(0:流程审批通过,1:审批中,2:审批驳回,7:已撤销)',
+`ctime` datetime NOT NULL DEFAULT "0000-00-00 00:00:00" comment '创建日期',
+`mtime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间', 
+PRIMARY KEY (`pgid`),
+KEY `idx_module_module_id` (`module`,`module_id`),
+KEY `idx_uid_status` (`origin_uid`,`status`)
+) ENGINE=MyISAM COMMENT '审批流程表'
+EOF;
+runquery($sql);
+/*}}}*/
+
+// 审批流程节点表
+$table = DB::table('pro_progress_nodes');
+/*{{{*/
+$sql = "CREATE TABLE IF NOT EXISTS $table ". <<<EOF
+(
+`pgnodeid` bigint unsigned NOT NULL AUTO_INCREMENT COMMENT '流程节点号(自增主键)',
+`node_name` varchar(64) NOT NULL DEFAULT '' COMMENT '节点名称',
+`pgid` bigint unsigned NOT NULL DEFAULT '0' COMMENT '所属的流程单ID',
+`porder` tinyint unsigned NOT NULL DEFAULT '0' COMMENT '流程序号(按升序推进)',
+`if_final` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '是否终态',
+`is_active` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '是否已到该流程',
+`can_skip` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '是否可以跳过',
+`uid` mediumint(8) unsigned NOT NULL DEFAULT '0' COMMENT '审批人uid',
+`feedback` varchar(128)  NOT NULL DEFAULT '' COMMENT '审批意见反馈',
+`status` tinyint(3) NOT NULL DEFAULT '1' COMMENT '状态(0:流程审批通过,1:审批中,2:审批驳回,10:跳过)',
+`ctime` datetime NOT NULL DEFAULT "0000-00-00 00:00:00" comment '创建时间',
+`active_time` datetime NOT NULL DEFAULT "0000-00-00 00:00:00" comment '到达时间',
+`done_time` datetime NOT NULL DEFAULT "0000-00-00 00:00:00" comment '处理时间',
+PRIMARY KEY (`pgnodeid`),
+KEY `idx_uid_is_active` (`uid`,`is_active`),
+KEY `idx_pgid` (`pgid`)
+) ENGINE=MyISAM COMMENT '审批流程节点表'
+EOF;
+runquery($sql);
+/*}}}*/
+
+// 审批流程模板
+$table = DB::table('pro_progress_template');
+/*{{{*/
+$sql = "CREATE TABLE IF NOT EXISTS $table ". <<<EOF
+(
+`tplid` bigint unsigned NOT NULL AUTO_INCREMENT COMMENT '模板ID号(自增主键)',
+`module` varchar(32) NOT NULL DEFAULT '' COMMENT '关联的模块(如PR,PO)',
+`porder` tinyint unsigned NOT NULL DEFAULT '0' COMMENT '流程序号(按升序推进)',
+`node_name` varchar(64) NOT NULL DEFAULT '' COMMENT '节点名称',
+`if_final` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '是否终态',
+`can_skip` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '是否可以跳过',
+`utype` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '审批人类型(1:直接上级,0:指定审批人)',
+`uid` mediumint(8) unsigned NOT NULL DEFAULT '0' COMMENT '审批人uid',
+`isenable` tinyint(1) unsigned NOT NULL DEFAULT '1' COMMENT '是否启用',
+`isdel` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '删除标志(0:未删,1:已删)',
+PRIMARY KEY (`tplid`),
+KEY `idx_module_isdel_isenable` (`module`,`isdel`,`isenable`)
+) ENGINE=MyISAM COMMENT '审批流程模板表'
+EOF;
+runquery($sql);
+// PR单审批流程
+$sql = "INSERT IGNORE INTO $table (tplid,module,porder,node_name,if_final,can_skip,utype,uid) VALUES ".<<<EOF
+(1,'PR',1,'直接上级',0,0,1,0),
+(2,'PR',2,'采购总监',1,0,0,1)
+EOF;
+runquery($sql);
+/*}}}*/
+
+
 // PR
 $table = DB::table('pro_pr');
 /*{{{*/ 
@@ -58,7 +157,8 @@ $sql = "CREATE TABLE IF NOT EXISTS $table ". <<<EOF
 (
 `prid` bigint unsigned NOT NULL AUTO_INCREMENT COMMENT 'PR编号(自增主键)',
 `prname` varchar(128) NOT NULL DEFAULT '' COMMENT 'PR名称',
-`status` tinyint(3) NOT NULL DEFAULT '1' COMMENT '状态(1:编辑中,2:审核中,)',
+`status` tinyint(3) NOT NULL DEFAULT '1' COMMENT '状态(1:编辑中,2:审批中,3:审批驳回,4:审批通过)',
+`pgid` bigint unsigned NOT NULL DEFAULT '0' COMMENT '流程ID', 
 `create_uid` mediumint(8) unsigned NOT NULL DEFAULT '0' COMMENT '创建者uid',
 `ctime` datetime NOT NULL DEFAULT "0000-00-00 00:00:00" comment '创建日期',
 `submit_time` datetime NOT NULL DEFAULT "0000-00-00 00:00:00" comment '提交日期',
@@ -66,7 +166,8 @@ $sql = "CREATE TABLE IF NOT EXISTS $table ". <<<EOF
 `isdel` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '删除标志(0:未删,1:已删)',
 PRIMARY KEY (`prid`),
 KEY `idx_isdel_uid` (`isdel`,`create_uid`),
-KEY `idx_isdel_status` (`isdel`,`status`)
+KEY `idx_isdel_status` (`isdel`,`status`),
+KEY `idx_pgid` (`pgid`)
 ) ENGINE=MyISAM COMMENT 'PR单主表'
 EOF;
 runquery($sql);
@@ -124,7 +225,6 @@ runquery($sql);
 runquery("ALTER TABLE `$table` ENGINE=INNODB");
 /*}}}*/
 
-
 // PO
 $table = DB::table('pro_po');
 /*{{{*/ 
@@ -146,6 +246,7 @@ KEY `idx_isdel_status` (`isdel`,`status`)
 EOF;
 runquery($sql);
 /*}}}*/
+
 
 // 供应商主表
 $table = DB::table('pro_supplier');
