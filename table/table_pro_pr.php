@@ -120,7 +120,7 @@ EOF;
         global $_G;
         $uid = $_G['uid'];
         $prid = pro_validate::getNCParameter('prid','prid','integer');
-        // op secure check
+        //1. 操作合法性校验
         $item = $this->get_by_pk($prid);
         if (empty($item) || $item['isdel']!=0) {
             throw new Exception("PR单不存在或已删除");
@@ -131,10 +131,15 @@ EOF;
         if ($item['status']!=1) {
             throw new Exception("此PR单已提交");
         }
-        // op
-        $status = 2;
+        //2. 创建审批流程
+		$uo = C::m('#pro#pro_user_organization')->getByUid($uid);
+		$title = "PR单[$prid]审批流程";
+		$pgid = C::m('#pro#pro_progress')->create('#pro#pro_pr',$prid,$title);
+		//3. 更改状态
+        $status = PRO_AUDIT_TODO;
         $data = array (
-            'status' => $status,
+			'pgid'        => $pgid,
+            'status'      => $status,
             'submit_time' => date('Y-m-d H:i:s'),
         );
         $this->update($prid,$data);

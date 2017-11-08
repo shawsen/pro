@@ -67,6 +67,18 @@ define(function(require){
                     }
                 });
 			});
+			// 提交PR单
+			jQuery('[name=submitbtn]').unbind('click').click(function(){
+				var params = {
+					prid: jQuery(this).data('id')
+				};
+				ajax.post('requirectl&action=prSubmit',params,function(res){
+					if (res.retcode!=0) mwt.notify(res.retmsg,1500,'danger');
+					else {
+						o.query();
+					}
+				});
+			});
 		});
 		o.query();
 	};

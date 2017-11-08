@@ -7,6 +7,8 @@ define("EBID_PLUGIN_PATH", dirname(__FILE__));
 chdir("../../../");
 
 $modules = array (
+	'progress',     //!< 审批流程
+
     'requirectl',   //!< 普通用户API
 	'purcherctl',   //!< 采购员API
     'seccode','uc','admin',

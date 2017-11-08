@@ -2,6 +2,7 @@
 if(!defined('IN_DISCUZ')) {
     exit('Access Denied');
 }
+require_once 'define.class.php';
 require_once 'utils.class.php';
 require_once 'log.class.php';
 require_once 'validate.class.php';

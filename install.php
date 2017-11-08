@@ -80,7 +80,7 @@ $table = DB::table('pro_progress');
 $sql = "CREATE TABLE IF NOT EXISTS $table ". <<<EOF
 (
 `pgid` bigint unsigned NOT NULL AUTO_INCREMENT COMMENT '流程号(自增主键)',
-`module` varchar(32) NOT NULL DEFAULT '' COMMENT '关联的模块(如PR,PO)',
+`module` varchar(128) NOT NULL DEFAULT '' COMMENT '关联的模块(如PR,PO)',
 `module_id` varchar(128) NOT NULL DEFAULT '' COMMENT '关联的模块ID(如prid,poid)',
 `origin_uid` mediumint(8) unsigned NOT NULL DEFAULT '0' COMMENT '流程发起人uid',
 `progress_title` varchar(128) NOT NULL DEFAULT '' COMMENT '流程标题',
@@ -130,7 +130,6 @@ $sql = "CREATE TABLE IF NOT EXISTS $table ". <<<EOF
 `module` varchar(32) NOT NULL DEFAULT '' COMMENT '关联的模块(如PR,PO)',
 `porder` tinyint unsigned NOT NULL DEFAULT '0' COMMENT '流程序号(按升序推进)',
 `node_name` varchar(64) NOT NULL DEFAULT '' COMMENT '节点名称',
-`if_final` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '是否终态',
 `can_skip` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '是否可以跳过',
 `utype` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '审批人类型(1:直接上级,0:指定审批人)',
 `uid` mediumint(8) unsigned NOT NULL DEFAULT '0' COMMENT '审批人uid',
@@ -142,9 +141,9 @@ KEY `idx_module_isdel_isenable` (`module`,`isdel`,`isenable`)
 EOF;
 runquery($sql);
 // PR单审批流程
-$sql = "INSERT IGNORE INTO $table (tplid,module,porder,node_name,if_final,can_skip,utype,uid) VALUES ".<<<EOF
-(1,'PR',1,'直接上级',0,0,1,0),
-(2,'PR',2,'采购总监',1,0,0,1)
+$sql = "INSERT IGNORE INTO $table (tplid,module,porder,node_name,can_skip,utype,uid) VALUES ".<<<EOF
+(1,'#pro#pro_pr',1,'直接上级',0,1,0),
+(2,'#pro#pro_pr',2,'采购总监',0,0,1)
 EOF;
 runquery($sql);
 /*}}}*/
