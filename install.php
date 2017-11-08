@@ -104,7 +104,7 @@ $sql = "CREATE TABLE IF NOT EXISTS $table ". <<<EOF
 `node_name` varchar(64) NOT NULL DEFAULT '' COMMENT '节点名称',
 `pgid` bigint unsigned NOT NULL DEFAULT '0' COMMENT '所属的流程单ID',
 `porder` tinyint unsigned NOT NULL DEFAULT '0' COMMENT '流程序号(按升序推进)',
-`if_final` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '是否终态',
+`is_final` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '是否终态',
 `is_active` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '是否已到该流程',
 `can_skip` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '是否可以跳过',
 `uid` mediumint(8) unsigned NOT NULL DEFAULT '0' COMMENT '审批人uid',
