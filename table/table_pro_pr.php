@@ -128,11 +128,11 @@ EOF;
         if ($item['create_uid']!=$uid) {
             throw new Exception("你不能提交此PR单");
         }
-        if ($item['status']!=1) {
+        if ($item['status']!=PRO_STATE_EDIT && $item['status']!=PRO_AUDIT_FAIL) {
             throw new Exception("此PR单已提交");
         }
         //2. 创建审批流程
-		$uo = C::m('#pro#pro_user_organization')->getByUid($uid);
+		//$uo = C::m('#pro#pro_user_organization')->getByUid($uid);
 		$title = "PR单[$prid]审批流程";
 		$pgid = C::m('#pro#pro_progress')->create('#pro#pro_pr',$prid,$title);
 		//3. 更改状态
@@ -155,7 +155,7 @@ EOF;
         global $_G;
         $uid = $_G['uid'];
         $prid = pro_validate::getNCParameter('prid','prid','integer');
-        // op secure check
+        //1. 操作合法性校验
         $item = $this->get_by_pk($prid);
         if (empty($item) || $item['isdel']!=0) {
             throw new Exception("PR单不存在或已删除");
@@ -163,21 +163,47 @@ EOF;
         if ($item['create_uid']!=$uid) {
             throw new Exception("你不能撤销此PR单");
         }
-        if ($item['status']!=2) {
+        if ($item['status']!=PRO_AUDIT_TODO) {
             throw new Exception("此PR单现在不能撤销");
         }
-        // op
-        $status = 1;
+        //2. 撤销流程
+        if ($item['pgid']) {
+            C::t('#pro#pro_progress')->cancel($item['pgid']);
+        }
+        //3. 撤销
         $data = array (
-            'status' => $status,
+            'status' => PRO_AUDIT_CANCEL,
         );
         $this->update($prid,$data);
-        // log
+        //4. log
         $log = $_G['username']." 撤销了PR单[$prid]";
         C::t('#pro#pro_pr_log')->write($prid,$status,$log);
         return $prid;
     }/*}}}*/
         
+    // 驳回PR单
+    public function reject($prid,$feedback)
+    {/*{{{*/
+        $status = PRO_AUDIT_FAIL;
+        $data = array (
+            'status' => $status,
+        );
+        $this->update($prid,$data);
+        $log = "PR单被驳回:$feedback";
+        C::t('#pro#pro_pr_log')->write($prid,$status,$log);
+    }/*}}}*/
+
+    // 通过PR单
+    public function pass($prid)
+    {/*{{{*/
+        $status = PRO_AUDIT_SUCC;
+        $data = array (
+            'status'   => $status,
+        );
+        $this->update($prid,$data);
+        $log = "PR单审批通过";
+        C::t('#pro#pro_pr_log')->write($prid,$status,$log);
+    }/*}}}*/
 }
 
 // vim600: sw=4 ts=4 fdm=marker syn=php

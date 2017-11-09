@@ -5,5 +5,7 @@
 
 @import url(view/index/index.css);
 
+@import url(view/flow/detail/flow.css);
+
 @import url(form/form.css);
 

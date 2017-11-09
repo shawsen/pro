@@ -8,6 +8,8 @@ define(function(require){
 		require('controller/requirectl').conf,		//!< 需求方管理后台
 		require('controller/purcherctl').conf,		//!< 采购员管理后台
 
+		require('controller/flow').conf,	//!< 流程
+
 		require('controller/help').conf,
 		require('controller/login').conf,   //!< 登录模块
 		require('controller/uc').conf       //!< 个人中心

@@ -81,19 +81,17 @@ EOF;
         $this->update($pgnodeid,$data);
         //3. 审批驳回
         if ($status == PRO_AUDIT_FAIL) {
-            //TODO:
+            C::t('#pro#pro_progress')->reject($record['pgid']);
+            return;
         }
-        //4. 审批通过
-        else if ($status == PRO_AUDIT_SUCC || $status== PRO_AUDIT_SKIP) {
-
-        }
-        //5. 如果不是终态
-        if ($record['if_final']!=1) {
+        //4. 审批通过或跳过
+        if ($record['is_final']==1) {
+            // 终态:审批流程通过
+            C::t('#pro#pro_progress')->pass($record['pgid']);
+        } else {
+            // 否则:通知下一个审批节点
             $nextOrder = intval($record['porder'])+1;
-            $nextNode = $this->getNodeByOrder($record['pgid'],$nextOrder);
-            if (!empty($nextNode)) {
-                
-            }
+            $nextNode = $this->activeNodeByOrder($record['pgid'],$nextOrder);
         }
     }/*}}}*/
 

@@ -10,14 +10,20 @@ define(function(require){
 		controller: control,
 		path: [
 			'/'+control+'/pr',
+			'/'+control+'/myflow',
+			'/'+control+'/myflowtodo',
 			'/'+control+'/myprs',
 			'/'+control+'/index'
 		],
 		// 左部菜单
 		menu: [
+			{name:'流程', icon:'icon icon-reply', submenu:[
+				{name:'我发起的流程',icon:'icon icon-reply',action:'myflow'},
+				{name:'待处理的流程',icon:'icon icon-reply',action:'myflowtodo'}
+			]},
 			{name:'PR单', icon:'icon icon-reply', submenu:[
 				{name:'我的PR单',icon:'icon icon-reply',action:'myprs'}
-			]},
+			]}
 		]
 	};
 
@@ -33,6 +39,15 @@ define(function(require){
 	o.indexAction=function() {
         window.location = '#/'+control+'/myprs';
 	};
+
+	// 我发起的流程
+	o.myflowAction=function(erurl) {
+		before_action();
+        var code = '<div id="myflow_div" class="ctlgrid" style="top:10px;">我发起的流程</div>';
+		frame.showpage(code);
+		require('view/myflow/page').execute('myflow_div');
+	};
+
 
 	// 我的PR单
 	o.myprsAction=function(erurl) {

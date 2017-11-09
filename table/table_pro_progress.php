@@ -19,6 +19,35 @@ class table_pro_progress extends discuz_table
         return DB::fetch_first($sql);
     }
 
+	// 我发起的流程
+	public function queryMine()
+	{
+		global $_G;
+        $uid = $_G['uid'];
+		$return = array(
+            "totalProperty" => 0,
+            "root" => array(),
+        ); 
+		$key   = pro_validate::getNCParameter('key','key','string'); 
+        $sort  = pro_validate::getOPParameter('sort','sort','string',1024,'ctime');
+        $dir   = pro_validate::getOPParameter('dir','dir','string',1024,'DESC');
+        $start = pro_validate::getNCParameter('start','start','integer',1024,0);
+        $limit = pro_validate::getNCParameter('limit','limit','integer',1024,20);
+        $where = "origin_uid='$uid'";
+		if ($key!="") $where.=" AND (progress_title like '%$key%')";
+		$table = DB::table($this->_table);
+		$sql = <<<EOF
+SELECT SQL_CALC_FOUND_ROWS a.*
+FROM $table as a
+WHERE $where ORDER BY $sort $dir LIMIT $start,$limit
+EOF;
+        $return["root"] = DB::fetch_all($sql);
+        $row = DB::fetch_first("SELECT FOUND_ROWS() AS total");
+        $return["totalProperty"] = $row["total"];
+        return $return;
+	}
+
+
 	// 创建一条流程单记录
 	public function create($module,$module_id,$title)
 	{/*{{{*/
@@ -34,6 +63,37 @@ class table_pro_progress extends discuz_table
 		return $this->insert($data,true);
 	}/*}}}*/
 
+    // 撤销流程
+    public function cancel($pgid)
+    {/*{{{*/
+        global $_G;
+        $data = array (
+            'status' => PRO_AUDIT_CANCEL,
+        );
+        return $this->update($pgid,$data);
+    }/*}}}*/
+
+    // 驳回流程
+    public function reject($pgid,$feedback)
+    {/*{{{*/
+        $record = $this->get_by_pk($pgid);
+        $data = array (
+            'status' => PRO_AUDIT_FAIL,
+        );
+        $this->update($data);
+        C::t($record['module'])->reject($record['module_id'],$feedback);   //!< 调用具体单的驳回接口
+    }/*}}}*/
+
+    // 通过
+    public function pass($pgid)
+    {/*{{{*/
+        $record = $this->get_by_pk($pgid);
+        $data = array (
+            'status' => PRO_AUDIT_SUCC,
+        );
+        $this->update($data);
+        C::t($record['module'])->reject($record['module_id']);
+    }/*}}}*/
 }
 
 // vim600: sw=4 ts=4 fdm=marker syn=php
