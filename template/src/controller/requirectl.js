@@ -13,23 +13,28 @@ define(function(require){
 			'/'+control+'/myflow',
 			'/'+control+'/myflowtodo',
 			'/'+control+'/myprs',
+			'/'+control+'/mypos',
 			'/'+control+'/index'
 		],
 		// 左部菜单
 		menu: [
-			{name:'流程', icon:'icon icon-reply', submenu:[
-				{name:'我发起的流程',icon:'icon icon-reply',action:'myflow'},
-				{name:'待处理的流程',icon:'icon icon-reply',action:'myflowtodo'}
+			{name:'流程', icon:'sicon-shuffle', submenu:[
+				{name:'我发起的流程',icon:'sicon-shuffle',action:'myflow'},
+				{name:'待处理的流程',icon:'sicon-shuffle',action:'myflowtodo'}
 			]},
 			{name:'PR单', icon:'icon icon-reply', submenu:[
-				{name:'我的PR单',icon:'icon icon-reply',action:'myprs'}
-			]}
+				{name:'我的PR单',icon:'icon icon-reply',action:'myprs'},
+				{name:'待处理的PR单',icon:'icon icon-reply',action:'myrevpr'}
+			]},
+			{name:'PO单', icon:'icon icon-order', submenu:[
+				{name:'我的PO单',icon:'icon icon-order',action:'mypos'}
+			]},
 		]
 	};
 
 	function before_action() {
 		require('./login').check();
-		if (dz.auth!=1) {
+		if (dz.auth==0) {
 			frame.showpage("没有权限");
 			throw new Error("没有权限");
 		}
@@ -45,8 +50,16 @@ define(function(require){
 		before_action();
         var code = '<div id="myflow_div" class="ctlgrid" style="top:10px;">我发起的流程</div>';
 		frame.showpage(code);
-		require('view/myflow/page').execute('myflow_div');
+		require('view/flow/myflow/page').execute('myflow_div');
 	};
+
+    // 待我处理的流程
+    o.myflowtodoAction=function(erurl) {
+		before_action();
+        var code = '<div id="myflowtodo_div" class="ctlgrid" style="top:10px;">待处理的流程</div>';
+		frame.showpage(code);
+		require('view/flow/mytodo/page').execute('myflowtodo_div');
+    };
 
 
 	// 我的PR单
@@ -71,15 +84,20 @@ define(function(require){
         require('form/pr/main').create({
             render : 'frame-center',
             formid : prid,
-            print  : false
+            print  : false,
+            edit   : true
         }).init();
-/*
-		var code = posnav.get('PR单')+
-			'<div id="requirectl_newpr_div" class="ctlgrid"></div>';
-		frame.showpage(code);
-//		require('view/requirectl/prform/page').execute('requirectl_newpr_div');
-*/
 	};
+
+    // PO单
+    o.myposAction=function(erurl) {
+        before_action();
+        var query=erurl.getQuery();
+        var state = query['s'] ? query['s'] : 1;
+        var code = '<div id="mypos_div" class="ctlgrid" style="top:10px;"></div>';
+        frame.showpage(code);
+//        require('view/po/mypos/page').execute('mypos_div',state);
+    };
 
 	return o;
 });

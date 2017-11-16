@@ -8,8 +8,8 @@ define(function(require){
 		var nowy = parseInt(date('Y'));
 		var yp = nowy>starty ? starty+'-'+nowy : starty;
 
-        var code = '<div style="text-align:center;font-size:12px;padding:15px 0;font-family:\'microsoft yahe\';">'+
-              '<p style="color:#666;">'+setting.copyright+' '+yp+'</p>'+
+        var code = '<div style="text-align:center;font-size:12px;margin:10px 0;font-family:\'microsoft yahe\';">'+
+              '<p style="color:#666;">'+setting.page_copyright+'</p>'+
             '</div>';
         return code;
     };

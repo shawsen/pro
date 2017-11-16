@@ -19,7 +19,7 @@ class model_pro_pr
         }
         $pr['prid_code'] = C::m('#pro#pro_authcode')->encodeID($prid);
         //2. 创建者信息
-        $pr['creatorInfo'] = C::m('#pro#pro_profile')->getByUid($pr['create_uid']);
+        $pr['creatorInfo'] = C::t('#pro#pro_user_organization')->getUserOrganization($pr['create_uid']);
         //3. PR项目列表
         $pr['items'] = C::t('#pro#pro_pr_items')->getAllByPrid($prid);
         return $pr;

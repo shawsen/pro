@@ -8,6 +8,10 @@ chdir("../../../");
 
 $modules = array (
 	'progress',     //!< 审批流程
+    'pr',           //!< PR模块API
+    'po',           //!< PO模块API
+    'supplier',     //!< 供应商模块API
+    'address',      //!< 送货地址模块API
 
     'requirectl',   //!< 普通用户API
 	'purcherctl',   //!< 采购员API

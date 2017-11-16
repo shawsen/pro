@@ -1,17 +1,19 @@
-/* grid.js, (c) 2017 mawentao */
 define(function(require){
+    /* 采购项列表 */
+    var prid,gridid,readonly,store;
     var o={};
-	var i = 0;
 
 
 	var columns = [
-		{header:'产品',dataIndex:'prod_info',align:'left',field:'text',defaultValue:''},
-		{header:'数量',dataIndex:'item_num',width:80,align:'right',field:'number',defaultValue:'0'},
-		{header:'单位',dataIndex:'item_unit',width:80,align:'center',field:'text',defaultValue:'个'},
+		{header:'产品',dataIndex:'prod_info',align:'left'},
+		{header:'品牌',dataIndex:'prod_brand',width:70,align:'center'},
+		{header:'规格',dataIndex:'prod_style',width:70,align:'center'},
+		{header:'备注',dataIndex:'use_info',align:'left',width:100},
+		{header:'数量',dataIndex:'item_num',width:60,align:'right'},
+		{header:'单位',dataIndex:'item_unit',width:50,align:'center'},
 		{header:'单价',dataIndex:'item_unit_price',width:80,align:'right',field:'number',defaultValue:'0.00'},
-		{header:'币种',dataIndex:'item_price_cny',width:80,align:'center',field:'text',defaultValue:'元'},
-		{header:'总价',dataIndex:'item_num',width:80,align:'center',render:function(v,item){
-			return item.item_num * item.item_unit_price;
+		{header:'总价',dataIndex:'item_num',width:105,align:'right',render:function(v,item){
+			return number_format(item.item_num * item.item_unit_price,2)+'元';
 		}}
 	];
 
@@ -23,95 +25,115 @@ define(function(require){
 		return style;
 	}
 
-
-	function getField(data,key,readonly) {
-		if (readonly) return data[key];
-		var code = '<input type="text" name="fm-'+key+'" class="mwt-field" value="'+data[key]+'">';
-		return code;
-	}
-
-	function addRow(tbodyid,data,readonly) {
-		++i;
-		if (!data) {
-			data = {
-				prod_info: '',
-				item_num: 1,
-				item_unit: '个',
-				item_unit_price: '0.00',
-				item_price_cny: '元'
-			};
-		}
-
-		var cols = [];
+    function showList() {
+        var cols = ['<td width="40" style="text-align:right;">序号</td>'];
 		for (var i=0;i<columns.length;++i) {
 			var cim = columns[i];
 			var style = getTdStyle(cim);
-//			var v = data[cim.dataIndex] ? data[cim.dataIndex] : cim.defaultValue;
-			var td = '<td'+style+'>'+getField(data,cim.dataIndex,readonly)+'</td>';
+			var td = '<td'+style+'>'+cim.header+'</td>';
 			cols.push(td);
 		}
+        if (!readonly){ cols.push('<td style="width:60px;"></td>'); }
+        
+        var rows = [];
+        var totalPrice = 0;
+        for (var i=0;i<store.size();++i) {
+            var col = ['<td style="text-align:right;">'+(i+1)+'.</td>'];
+            var item = store.get(i);
+            for (var c=0;c<columns.length;++c) {
+                var cim = columns[c];
+                var k = cim['dataIndex'];
+                var v = cim.render ? cim.render(item[k],item) : item[k];
+                var style = getTdStyle(cim);
+                col.push('<td'+style+'>'+v+'</td>');
+            }
+            if (!readonly) {
+                var editbtn = '<a name="edbtn-'+gridid+'" href="javascript:;" data-id="'+item.item_id+'" pop-title="编辑">'+
+                                '<i class="icon icon-edit"></i></a>';
+                var delbtn = '<a name="delbtn-'+gridid+'" href="javascript:;" data-id="'+item.item_id+'" pop-title="删除">'+
+                                '<i class="icon icon-trash"></i></a>';
+                var btsn = [editbtn,delbtn];
+                col.push('<td style="text-align:right;">'+btsn.join('&nbsp;&nbsp;')+'</td>');
+            }
+            rows.push('<tr>'+col.join('')+'</tr>');
+            totalPrice += item.item_unit_price * item.item_num;
+        }
 
+        var code = '<table class="listtab">'+
+            '<thead><tr class="head">'+cols.join('')+'</tr></thead>'+
+            rows.join('')+
+            '<thead><tr class="foot">'+
+                '<td></td>'+
+                '<td></td>'+
+                '<td></td>'+
+                '<td></td>'+
+                '<td></td>'+
+                '<td></td>'+
+                '<td></td>'+
+                '<td style="text-align:right;font-weight:bold;">总计:</td>'+
+                '<td style="text-align:right;color:red;">'+number_format(totalPrice,2)+'元</td>'+
+                (readonly ? '' : '<td></td>')+
+            '</tr></thead>'+
+        '</table>';
+        jQuery('#'+gridid).html(code);
+        mwt.popinit();
+        // 点击编辑按扭
+        jQuery('[name=edbtn-'+gridid+']').unbind('click').click(function(){
+            var item_id=jQuery(this).data('id');
+            var idx = store.indexOf('item_id',item_id);
+            var item = store.get(idx);
+            require('./dialog').open(item);
+        });
+        // 点击删除按扭
+        jQuery('[name=delbtn-'+gridid+']').unbind('click').click(function(){
+            var item_id=jQuery(this).data('id');
+            mwt.confirm('确定删除吗?',function(res){
+                if (res) removeItem(item_id);
+            });
+        });
+    }
 
+    function removeItem(item_id) {
+        ajax.post('pr&action=removeItem',{item_id:item_id},function(res){
+            if (res.retcode!=0) mwt.notify(res.retmsg,1500,'danger');
+            else { o.query(); }
+        });
+    };
+
+	o.show=function(domid,data,_readonly){
+        prid = data.prid;
+        gridid = 'grid-'+domid;
+        readonly = _readonly;
 		var opbtn = '';
 		if (!readonly) {
-			opbtn = '<td><a name="delbtn-'+tbodyid+'" data-row="'+i+'" '+
-				'class="grida" href="javascript:;">删除</a></td>';
-		}
-		var row = '<tr id="row-'+tbodyid+i+'">'+
-			cols.join('')+
-			//'<td>'+data.item_unit*data.item_unit_price+'</td>'+
-			opbtn+
-		'</tr>';
-		jQuery('#'+tbodyid).append(row);
-		jQuery('[name=delbtn-'+tbodyid+']').unbind('click').click(function(){
-			var rowid = jQuery(this).data('row');
-			jQuery('#row-'+tbodyid+rowid).remove();
-		});
-	}
-
-	o.show=function(domid,data,readonly){
-		var theads = [];
-		for (var i=0;i<columns.length;++i) {
-			var col = columns[i];
-			var style = getTdStyle(col);
-			theads.push('<th'+style+'>'+col.header+'</th>');
-		}
-		var opbtn = '';
-		if (!readonly) {
-			theads.push('<th></th>');
-			opbtn = '<button class="mwt-btn mwt-btn-primary mwt-btn-xs round" style="float:right;"'+
+			opbtn = '<button class="mwt-btn mwt-btn-danger mwt-btn-xs round" style="float:right;"'+
 				'id="addbtn-'+domid+'" >'+
 				'<i class="sicon-plus" style="vertical-align:middle;"></i> 添加项</button>';
 		}
-		var code = '<thead><tr><th colspan="'+theads.length+'">采购项列表(Purchasing Product List)'+
-			opbtn+'</th></tr>'+
-			theads.join('')+'</thead>'+
-			'<tbody id="imb-'+domid+'"></tbody>';
+		var code = '<thead><tr><th class="partition">采购项列表(Purchasing Product List)'+
+			opbtn+'</th></tr></thead>'+
+            '<tr><td id="'+gridid+'" style="padding:5px;"></td></tr>';
 		jQuery('#'+domid).html(code);
-		for (var i=0;i<data.items.length; ++i) {
-			addRow('imb-'+domid,data.items[i],readonly);
-		}
+        store = new mwt.Store({
+            proxy: new mwt.HttpProxy({
+                url: ajax.getAjaxUrl('pr&action=queryItems')
+            })
+        });
+        store.on('load',showList);
+        o.query();
+        // 添加项
 		jQuery('#addbtn-'+domid).unbind('click').click(function(){
-			addRow('imb-'+domid,null,readonly);
+            var item = {prid:data.prid,item_id:0};
+            require('./dialog').open(item);
 		});
-
 	};
 
-	o.getItems=function(domid) {
-		var n = jQuery('[name=fm-prod_info]').length;
-		var keys = ['prod_info','item_num','item_unit','item_unit_price','item_price_cny'];
-		var items = [];
-		for (var i=0;i<n;++i) {
-			var item = {};
-			for (var k=0;k<keys.length;++k) {
-				var key = keys[k];
-				var jfd = jQuery('[name=fm-'+key+']').eq(i);				
-				item[key] = jfd.val().trim();
-			}
-			items.push(item);
-		}
-		return items;
-	};
+    o.query=function() {
+		store.baseParams = {
+            prid: prid
+        };
+        store.load();
+    };
 
 	return o;
 });

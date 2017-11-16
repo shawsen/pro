@@ -1,7 +1,7 @@
 /* brass style (autoneum) */
 #header {background:#333;border:none;}
 #frame-west {background:#555;}
-.menu li.active a, .menu li:hover a, .submenudiv a:hover {color:#A8B301;}
+.menu li.active a, .menu li a:hover, .submenudiv a:hover {color:#A8B301;}
 .userbtn {color:#C6DE41;}
 .userbtn:hover,.posul li a:hover {color:#C6DE41;}
 .submenudiv {border-color:#D6DC6D;}
@@ -16,7 +16,10 @@
 .mwt-layout-border-split-horizontal, .mwt-layout-border-split-vertical {background:#eee;}
 .mwt-dialog .login-modaldiv {background:#ccc;}
 .mwt-btn-primary {background:#A8B301;border-color:#A8B301;}
-.mwt-btn-primary:hover {background-color:#B8C400;border-color:#B8C400;}
+.mwt-btn-primary.active, .mwt-btn-primary:active, .mwt-btn-primary:focus, .mwt-btn-primary:hover {
+    background-color:#B8C400;border-color:#B8C400;
+}
+
 .mwt-field:focus {border-color:#D6DC6D;box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(205,220,57,.6);}
 
 

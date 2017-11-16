@@ -1,6 +1,28 @@
 
-.flowdiv {width:1000px;margin:10px auto;}
+.flowdiv {width:1000px;margin:20px auto 0;background:#fff;padding:30px;}
 
-.flowdiv h1 {font-size:16px;font-weight:normal;margin:0;}
-.flowdiv hr {}
+.flowdiv h1 {font-size:16px;margin:0 0 30px;font-family:'HeiTi';color:#758A00;text-align:center;}
+.flowdiv h2 {font-size:14px;font-weight:normal;border-top:solid 1px #eee;margin-top:20px;padding-top:10px;color:#5e6d82;}
+.flowdiv h3 {font-size:12px;color:#5e6d82;text-align:left;margin:0;}
+
+
+.flowtab {margin:10px auto;}
+.flowtab td {font-size:12px;white-space:nowrap;color:gray;}
+.flowtab td.node {width:20px;}
+.flowtab .xs {font-size:17px;float:left;}
+.flowtab hr {border:none;border-bottom:solid 2px #ccc;min-width:70px;}
+
+.flowtab td.pass {color:green;}
+.flowtab td.pass hr {border-color:#5EB95E;}
+
+.flowtab td.fail {color:red;}
+.flowtab td.fail hr {border-color:#E16662;}
+.mwt-icon-btn {background:#ddd;}
+
+/* 审批信息 */
+.audit-tab {width:100%;border:solid 1px #eee;margin-bottom:12px;}
+.audit-tab th, .audit-tab td {padding:8px 10px;font-size:13px;font-weight:normal;text-align:left;}
+.audit-tab th {color:#6a5e48;}
+.audit-tab td {color:#000;}
+
 

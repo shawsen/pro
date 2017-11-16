@@ -1,5 +1,5 @@
 define(function(require){
-	/* grid.js, (c) 2017 mawentao */
+	/* 待处理的流程列表 */
 	var dict = require('common/dict');
 	var store,grid,gridid;
     var state;
@@ -11,7 +11,7 @@ define(function(require){
 		gridid = _gridid;
 		store = new mwt.Store({
     		proxy: new mwt.HttpProxy({
-        		url: ajax.getAjaxUrl('progress&action=myflow')
+        		url: ajax.getAjaxUrl('progress&action=mytodo')
     		})
 		});
 		grid = new MWT.Grid({
@@ -19,31 +19,26 @@ define(function(require){
     		store    : store,
 			pagebar  : true,  // false 表示不分页
 			bordered : false,  // false 不显示列边框
-			pageSize : 10,    // 默认每页大小
+			pageSize : 20,    // 默认每页大小
 			multiSelect : false,
             striped  : true,
-//			position : 'fixed',
-			tbarStyle: 'margin-bottom:10px;background:#fff;',
+            bodyStyle: 'min-height:200px;',
+/*			tbarStyle: 'margin-bottom:10px;background:#fff;',
 			tbar: [
 				{type:"search",id:"so-key-"+gridid,width:300,placeholder:'查询我的流程单',handler:o.query}
-			],
+			],*/
 			cm: new MWT.Grid.ColumnModel([
-				{head:"流程单号", dataIndex:"pgid",width:100,align:'left',sort:true,render:function(v,item){
-					return v;
+				{head:"流程发起人", dataIndex:"uid",width:160,align:'left',sort:true,render:function(v,item){
+					return item.realname+'（'+item.group_name+'）';
 				}},
 				{head:"流程",dataIndex:"progress_title",align:'left',render:function(v,item){
 					var url = '#/flow~f='+item.pgid;
-					return '<a class="grida" href="'+url+'" target="_blank">'+v+'</a>';
+					return '<a class="grida" href="'+url+'">'+v+'</a>';
 				}},
-				{head:"创建时间",dataIndex:"ctime",width:120,align:'center',sort:true,render:timeRender},
-				{head:"状态",dataIndex:"status",width:100,align:'center',render:function(v){
-					return dict.get_audit(v);
-				}},
-				{head:"操作", dataIndex:"pgid",width:120,align:'center',render:function(v,item){
-					var viewbtn = '<a class="grida" href="#/flow~f='+v+'">查看</a>';
-					var cancelbtn = '<a class="grida" href="javascript:;" data-id="'+v+'">撤销</a>';
+				{head:"到达时间",dataIndex:"active_time",width:120,align:'center',sort:true,render:timeRender},
+				{head:"操作", dataIndex:"pgid",width:120,align:'right',render:function(v,item){
+					var viewbtn = '<a class="mwt-btn mwt-btn-primary mwt-btn-xs" href="#/flow~f='+v+'">立即处理</a>';
                     var btns = [viewbtn];
-					if (item.status==101) btns.push(cancelbtn);
                     return btns.join("&nbsp;&nbsp;&nbsp;");
 				}}
 			])
@@ -73,8 +68,8 @@ define(function(require){
 
 	o.query=function() {
 		store.baseParams = {
-			status: state,
-            key: mwt.get_value("so-key-"+gridid)
+//			status: state,
+//            key: mwt.get_value("so-key-"+gridid)
         };  
         grid.load();
 	};

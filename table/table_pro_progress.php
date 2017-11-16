@@ -21,7 +21,7 @@ class table_pro_progress extends discuz_table
 
 	// 我发起的流程
 	public function queryMine()
-	{
+	{/*{{{*/
 		global $_G;
         $uid = $_G['uid'];
 		$return = array(
@@ -29,12 +29,14 @@ class table_pro_progress extends discuz_table
             "root" => array(),
         ); 
 		$key   = pro_validate::getNCParameter('key','key','string'); 
+		$status= pro_validate::getOPParameter('status','status','integer',1024,-1); 
         $sort  = pro_validate::getOPParameter('sort','sort','string',1024,'ctime');
         $dir   = pro_validate::getOPParameter('dir','dir','string',1024,'DESC');
-        $start = pro_validate::getNCParameter('start','start','integer',1024,0);
-        $limit = pro_validate::getNCParameter('limit','limit','integer',1024,20);
+        $start = pro_validate::getOPParameter('start','start','integer',1024,0);
+        $limit = pro_validate::getOPParameter('limit','limit','integer',1024,20);
         $where = "origin_uid='$uid'";
 		if ($key!="") $where.=" AND (progress_title like '%$key%')";
+        if ($status!='-1') $where.=" AND a.status='$status'";
 		$table = DB::table($this->_table);
 		$sql = <<<EOF
 SELECT SQL_CALC_FOUND_ROWS a.*
@@ -45,8 +47,15 @@ EOF;
         $row = DB::fetch_first("SELECT FOUND_ROWS() AS total");
         $return["totalProperty"] = $row["total"];
         return $return;
-	}
+	}/*}}}*/
 
+    // 删除模块关联的全部流程单
+    public function removeOldProgress($module,$module_id)
+    {/*{{{*/
+        $sql = "UPDATE ".DB::table($this->_table)." SET isdel=1 ".
+               "WHERE module='$module' AND module_id='$module_id' AND isdel=0";
+        DB::query($sql);
+    }/*}}}*/
 
 	// 创建一条流程单记录
 	public function create($module,$module_id,$title)
@@ -84,16 +93,6 @@ EOF;
         C::t($record['module'])->reject($record['module_id'],$feedback);   //!< 调用具体单的驳回接口
     }/*}}}*/
 
-    // 通过
-    public function pass($pgid)
-    {/*{{{*/
-        $record = $this->get_by_pk($pgid);
-        $data = array (
-            'status' => PRO_AUDIT_SUCC,
-        );
-        $this->update($data);
-        C::t($record['module'])->reject($record['module_id']);
-    }/*}}}*/
 }
 
 // vim600: sw=4 ts=4 fdm=marker syn=php

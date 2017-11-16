@@ -19,6 +19,35 @@ class table_pro_address extends discuz_table
         return DB::fetch_first($sql);
     }
 
+
+    // 查询有效的送货地址列表
+    public function queryEffect()
+	{/*{{{*/
+		$return = array(
+            "totalProperty" => 0,
+            "root" => array(),
+        ); 
+		$key   = pro_validate::getNCParameter('key','key','string'); 
+        $sort  = pro_validate::getOPParameter('sort','sort','string',1024,'displayorder');
+        $dir   = pro_validate::getOPParameter('dir','dir','string',1024,'ASC');
+        $start = pro_validate::getNCParameter('start','start','integer',1024,0);
+        $limit = pro_validate::getNCParameter('limit','limit','integer',1024,20);
+        $where = "a.isdel=0";
+		if ($key!="") $where.=" AND (address like '%$key%' OR contact like '%$key%')";
+
+		$table = DB::table($this->_table);
+		$sql = <<<EOF
+SELECT SQL_CALC_FOUND_ROWS a.*
+FROM $table as a
+WHERE $where ORDER BY $sort $dir LIMIT $start,$limit
+EOF;
+        $return["root"] = DB::fetch_all($sql);
+        $row = DB::fetch_first("SELECT FOUND_ROWS() AS total");
+        $return["totalProperty"] = $row["total"];
+        return $return;
+	}/*}}}*/
+
+
 	// 管理后台查询接口
 	public function query()
 	{/*{{{*/

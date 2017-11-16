@@ -5,6 +5,12 @@ if (!defined('IN_DISCUZ')) {
 require_once dirname(__FILE__)."/class/env.class.php";
 include_once dirname(__FILE__)."/lang/lang.inc.php";
 
+// 登录检查
+if(!$_G['uid']){
+	$login = pro_env::get_siteurl()."/member.php?mod=logging&action=login";
+    header("Location: $login");
+    exit();
+}
 
 $form = $_GET['form'] ? $_GET['form'] : '';
 $formid = $_GET['formid'] ? $_GET['formid'] : '';

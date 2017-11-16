@@ -19,6 +19,19 @@ class table_pro_progress_nodes extends discuz_table
         return DB::fetch_first($sql);
     }
 
+    // 按顺序获取某个流程的所有节点
+    public function getNodesByPgid($pgid)
+    {
+        $table = DB::table($this->_table);
+        $sql = <<<EOF
+SELECT * FROM $table 
+WHERE pgid='$pgid' 
+ORDER BY porder ASC
+EOF;
+        return DB::fetch_all($sql);
+    }
+
+
     // 获取某个流程的第n个节点
     public function getNodeByOrder($pgid,$porder) 
     {
@@ -38,15 +51,16 @@ class table_pro_progress_nodes extends discuz_table
         $table_pro_progress_nodes = DB::table('pro_progress_nodes');
         $table_pro_progress = DB::table('pro_progress');
         $table_pro_user_organization =  DB::table('pro_user_organization');
+        $where = "a.uid='$uid' AND a.is_active=1 AND b.status=".PRO_AUDIT_TODO." AND b.isdel=0";
 		$sql = <<<EOF
 SELECT SQL_CALC_FOUND_ROWS 
-a.pgnodeid,a.node_name,a.can_skip,a.active_time,
+a.pgnodeid,a.node_name,a.can_skip,a.active_time,a.pgid,
 b.module,b.module_id,b.origin_uid,b.progress_title,
 c.realname,c.group_name
 FROM $table_pro_progress_nodes as a 
 LEFT JOIN $table_pro_progress as b ON a.pgid=b.pgid
 LEFT JOIN $table_pro_user_organization as c ON b.origin_uid=c.uid
-WHERE a.uid='$uid' AND a.is_active=1 AND b.status=1
+WHERE $where
 ORDER BY a.active_time DESC
 EOF;
         $return["root"] = DB::fetch_all($sql);
@@ -69,6 +83,7 @@ EOF;
         if ($record['is_active']!=1) {
             throw new Exception('该流程节点尚未激活');
         }
+        $pgid = $record['pgid'];
         //2. 更新记录
         $status = pro_validate::getNCParameter('status','status','integer');
         $feedback = pro_validate::getNCParameter('feedback','feedback','string',128);
@@ -81,30 +96,16 @@ EOF;
         $this->update($pgnodeid,$data);
         //3. 审批驳回
         if ($status == PRO_AUDIT_FAIL) {
-            C::t('#pro#pro_progress')->reject($record['pgid']);
+            C::m('#pro#pro_progress')->endAudit($pgid,$status,"审批驳回: ".$feedback);
             return;
         }
         //4. 审批通过或跳过
         if ($record['is_final']==1) {
             // 终态:审批流程通过
-            C::t('#pro#pro_progress')->pass($record['pgid']);
+            C::m('#pro#pro_progress')->endAudit($pgid,$status,'审批通过');
         } else {
             // 否则:通知下一个审批节点
-            $nextOrder = intval($record['porder'])+1;
-            $nextNode = $this->activeNodeByOrder($record['pgid'],$nextOrder);
-        }
-    }/*}}}*/
-
-    // 激活第n个节点
-    private function activeNodeByOrder($pgid,$porder) 
-    {/*{{{*/
-        $pnode = $this->getNodeByOrder($pgid,$porder);
-        if (!empty($pnode)) {
-            $data = array (
-                'is_active' => 1,
-                'active_time' => date('Y-m-d H:i:s'),
-            );
-            $this->update($pnode['pgnodeid'],$data);
+            C::m('#pro#pro_progress')->activeNextNode($pgid);
         }
     }/*}}}*/
 
@@ -119,7 +120,7 @@ EOF;
 		foreach ($nodes as &$node) {
 			$node_name = $node['node_name'];
 			$is_final = $n==$porder ? 1 : 0;
-			$is_active = $porder == 1 ? 1 : 0;
+			$is_active = 0;
 			$can_skip = $node['can_skip'];
 			$uid = $node['uid'];
 			$status = PRO_AUDIT_TODO;

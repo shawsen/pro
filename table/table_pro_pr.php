@@ -34,13 +34,24 @@ class table_pro_pr extends discuz_table
         $dir   = pro_validate::getOPParameter('dir','dir','string',1024,'DESC');
         $start = pro_validate::getNCParameter('start','start','integer',1024,0);
         $limit = pro_validate::getNCParameter('limit','limit','integer',1024,20);
-        $where = "isdel=0 AND create_uid='$uid'";
+        $where = "a.isdel=0 AND a.create_uid='$uid'";
 		if ($key!="") $where.=" AND (prname like '%$key%')";
-        if ($status!=-1) $where.=" AND status='$status'";
+        $ss = array();
+        switch ($status) {
+            case 0: $ss=array(0,PRO_STATE_EDIT,PRO_AUDIT_SKIP,PRO_AUDIT_FAIL,PRO_AUDIT_CANCEL); break;
+            case 1: $ss=array(PRO_AUDIT_TODO); break;
+            case 2: $ss=array(PRO_AUDIT_SUCC); break;
+        }
+        if (!empty($ss)) {
+            $where.=" AND a.status IN (".implode(',',$ss).")";
+        }
 		$table_pro_pr = DB::table($this->_table);
+        $table_pro_progress = DB::table('pro_progress');
+        $sort = "a.$sort";
 		$sql = <<<EOF
-SELECT SQL_CALC_FOUND_ROWS a.*
+SELECT SQL_CALC_FOUND_ROWS a.*,b.progress_title
 FROM $table_pro_pr as a
+LEFT JOIN $table_pro_progress as b ON a.pgid=b.pgid
 WHERE $where ORDER BY $sort $dir LIMIT $start,$limit
 EOF;
         $return["root"] = DB::fetch_all($sql);
@@ -54,6 +65,35 @@ EOF;
 			}
 		}
 		///////////////////////////////////////////
+        return $return;
+	}/*}}}*/
+
+    // 查询审批通过的PR单
+    public function queryAuditSucc()
+	{/*{{{*/
+		$return = array(
+            "totalProperty" => 0,
+            "root" => array(),
+        ); 
+		$key   = pro_validate::getNCParameter('key','key','string'); 
+        $sort  = pro_validate::getOPParameter('sort','sort','string',1024,'ctime');
+        $dir   = pro_validate::getOPParameter('dir','dir','string',1024,'DESC');
+        $start = pro_validate::getNCParameter('start','start','integer',1024,0);
+        $limit = pro_validate::getNCParameter('limit','limit','integer',1024,20);
+        $status = PRO_AUDIT_SUCC;
+        $where = "a.isdel=0 AND a.status='$status'";
+		if ($key!="") $where.=" AND (prid='$key' OR prname like '%$key%')";
+
+		$table_pro_pr = DB::table($this->_table);
+        $sort = "a.$sort";
+		$sql = <<<EOF
+SELECT SQL_CALC_FOUND_ROWS a.*
+FROM $table_pro_pr as a
+WHERE $where ORDER BY $sort $dir LIMIT $start,$limit
+EOF;
+        $return["root"] = DB::fetch_all($sql);
+        $row = DB::fetch_first("SELECT FOUND_ROWS() AS total");
+        $return["totalProperty"] = $row["total"];
         return $return;
 	}/*}}}*/
 
@@ -128,8 +168,13 @@ EOF;
         if ($item['create_uid']!=$uid) {
             throw new Exception("你不能提交此PR单");
         }
-        if ($item['status']!=PRO_STATE_EDIT && $item['status']!=PRO_AUDIT_FAIL) {
+        $subedStates = array(PRO_AUDIT_SUCC,PRO_AUDIT_TODO);
+        if (in_array($item['status'],$subedStates)) {
             throw new Exception("此PR单已提交");
+        }
+        $items = C::t('#pro#pro_pr_items')->getAllByPrid($prid);
+        if (empty($items)) {
+            throw new Exception("此PR单的采购项为空");
         }
         //2. 创建审批流程
 		//$uo = C::m('#pro#pro_user_organization')->getByUid($uid);
@@ -181,27 +226,14 @@ EOF;
         return $prid;
     }/*}}}*/
         
-    // 驳回PR单
-    public function reject($prid,$feedback)
+    // 审批PR单
+    public function audit($prid,$status,$feedback)
     {/*{{{*/
-        $status = PRO_AUDIT_FAIL;
         $data = array (
             'status' => $status,
         );
         $this->update($prid,$data);
-        $log = "PR单被驳回:$feedback";
-        C::t('#pro#pro_pr_log')->write($prid,$status,$log);
-    }/*}}}*/
-
-    // 通过PR单
-    public function pass($prid)
-    {/*{{{*/
-        $status = PRO_AUDIT_SUCC;
-        $data = array (
-            'status'   => $status,
-        );
-        $this->update($prid,$data);
-        $log = "PR单审批通过";
+        $log = "$feedback";
         C::t('#pro#pro_pr_log')->write($prid,$status,$log);
     }/*}}}*/
 }

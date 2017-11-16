@@ -16,6 +16,7 @@ $actionlist = array(
 	'myflow' => array(),  //!< 我发起的流程
 	'mytodo' => array(),  //!< 我的当前待处理的审批流程单
 	'detail' => array(),  //!< 流程详情页
+    'audit'  => array(),  //!< 审批
 );
 ////////////////////////////////////
 $uid      = $_G['uid'];
@@ -26,7 +27,7 @@ $action   = isset($_GET['action']) ? $_GET['action'] : "get";
 try {
     //////////////////////////////////////////////////
     $auth = C::t('#pro#pro_auth')->getByUid($uid);
-    if ($auth!=1) {
+    if ($auth==0) {
         throw new Exception("permission denied");
     }
     //////////////////////////////////////////////////
@@ -54,6 +55,9 @@ function detail() {
 	$pgid = pro_validate::getNCParameter('pgid','pgid','string'); 
 	return C::m('#pro#pro_progress')->getDetail($pgid);
 }
+
+// 审批
+function audit() {return C::t('#pro#pro_progress_nodes')->procMyActiveNode();}
 
 // vim600: sw=4 ts=4 fdm=marker syn=php
 ?>

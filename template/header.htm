@@ -12,11 +12,12 @@
   <link type="text/css" rel="stylesheet" href="$pluginPath/template/src/theme/{$page_style}.css">
   <script type="text/javascript" src="$pluginPath/template/libs/jquery/1.11.2/jquery.min.js"></script>
   <script type="text/javascript" src="$pluginPath/template/libs/jquery/jquery.cookie.js"></script>
+  <script type="text/javascript" src="$pluginPath/template/libs/jquery/jqprint.min.js"></script>
   <script type="text/javascript" src="$pluginPath/template/libs/mwt/4.0/mwt.min.js"></script>
   <script type="text/javascript" src="$pluginPath/template/libs/requirejs/2.1.9/require.js"></script>
   <script type="text/javascript" src="$pluginPath/template/src/japp.js" charset="utf-8"></script>
 </head>
-<body>
+<body style="background:#f2f2f2;">
   <div id="header">
     <a class="logo" href="#/">
       <img src="{$setting[logourl]}">
@@ -29,15 +30,31 @@
 	  <li><a href="javascript:langChoice.set('en');">English</a></li>
 	</ul>
     <div class="nav">
-      <ul class="menu" style="display:none;">
-        <li name="nav-menu-li" data-mod="index"><a href="#/"><!--{$lang[nav_home]}--></a></li>
-		<!--{if $_G[groupid]==1}-->
-        <li class="sep"></li>
-		<li name="nav-menu-li" data-mod="purcherctl"><a href="#/purcherctl">[ {$lang[nav_purcherctl]} ]</a></li>
-        <!--{/if}-->
-		<!--{if $_G[groupid]>1}-->
-        <li class="sep"></li>
-		<li name="nav-menu-li" data-mod="supplierctl"><a href="#/supplierctl">[ {$lang[nav_supplierctl]} ]</a></li>
+      <ul class="menu">
+        <li name="nav-menu-li" data-mod="index"><a href="#/"><i class="sicon-home"></i> <!--{$lang[nav_home]}--></a></li>
+        <li name="nav-menu-li" data-mod="flow"><a href="#/flow/myflow"><i class="sicon-equalizer"></i> 流程</a></li>
+        <li name="nav-menu-li" data-mod=""><a href="javascript:;" class="menu-sub"><i class="icon icon-reply"></i> 发起 <i class="fa fa-angle-down" style="margin-left:2px;vertical-align:middle;font-size:16px;"></i></a>
+          <ul class="menu-sub-ul">
+            <li><a href="#/pr/form"><i class="fa fa-caret-right"></i> PR单</a></li>
+            <!--{if $auth==2}-->
+            <li><a href="#/po/form"><i class="fa fa-caret-right"></i> PO单</a></li>
+            <!--{/if}-->
+          </ul>
+        </li>
+        <li name="nav-menu-li" data-mod="pr"><a href="javascript:;" class="menu-sub"><i class="icon icon-list"></i> 我的 <i class="fa fa-angle-down" style="margin-left:2px;vertical-align:middle;font-size:16px;"></i></a>
+          <ul class="menu-sub-ul">
+            <li><a href="#/pr/myprs"><i class="fa fa-caret-right"></i> 我的PR单</a></li>
+            <!--{if $auth==2}-->
+            <li><a href="#/po/list"><i class="fa fa-caret-right"></i> 我的PO单</a></li>
+            <!--{/if}-->
+          </ul>
+        </li>
+      </ul>
+    </div>
+    <div class="nav" style="float:right;padding-right:20px;">
+      <ul class="menu">
+        <!--{if $auth==2}-->
+		<li name="nav-menu-li" data-mod="purcherctl"><a href="#/purcherctl">[ 采购管理后台 ]</a></li>
         <!--{/if}-->
       </ul>
       <!--{if $_G[uid]!=0}-->
@@ -53,8 +70,6 @@
       <!--{/if}-->
     </div>
   </div>
-
-  <div id="frame-body"></div>
 
   <script type="text/javascript">
     var dz = {

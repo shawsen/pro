@@ -3,23 +3,30 @@ define(function(require){
     var o={};
 
 	o.execute=function(domid){
+        var prdiv = '<div id="pr-'+domid+'" class="wall" style="min-height:100px;"></div>';
+        var podiv = '<div id="po-'+domid+'" class="wall" style="min-height:100px;"></div>';
+        var divs = [prdiv];
+        if (dz.auth==2) divs.push(podiv);
+        var width = 100/divs.length
+        var tds = [];
+        for (var i=0;i<divs.length;++i) {
+            if (i!=0) tds.push('<td>&nbsp;&nbsp;</td>');
+            tds.push('<td width="'+width+'%" style="vertical-align:top;">'+divs[i]+'</td>');
+        }
 		var code = '<div class="wp">'+
-			'<table class="wptab"></tr>'+
-				'<td style="padding-right:10px;">'+
-				  	'<div id="introduction-'+domid+'"></div>'+
-				'</td>'+
-				'<td width="280">'+
-				  	'<div id="announce-'+domid+'"></div>'+
-				  	'<div id="contact-'+domid+'" style="margin-top:10px;"></div>'+
-				'</td>'+
-			'</tr></table>'+
+            '<div id="flow-'+domid+'" class="wall" style="min-height:100px;"></div>'+
+            '<table width="100%" style="margin:10px 0;">'+
+              '<tr>'+tds.join('')+'</tr>'+
+            '</table>'+
 		'</div>'+
 		require('common/copyright').get();
-		jQuery('#'+domid).css({"background":"#eee"}).html(code);
+		jQuery('#'+domid).html(code);
 
-		require('./introduction').init('introduction-'+domid);
-		require('./announce').init('announce-'+domid);
-		require('./contact').init('contact-'+domid);
+		require('./flow').init('flow-'+domid);
+		require('./pr').init('pr-'+domid);
+        if (dz.auth==2) {
+            require('./po').init('po-'+domid);
+        }
 	};
 
 	return o;

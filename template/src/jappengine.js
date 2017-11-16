@@ -9,6 +9,8 @@ define(function(require){
 		require('controller/purcherctl').conf,		//!< 采购员管理后台
 
 		require('controller/flow').conf,	//!< 流程
+		require('controller/pr').conf,	    //!< PR单
+		require('controller/po').conf,	    //!< PO单
 
 		require('controller/help').conf,
 		require('controller/login').conf,   //!< 登录模块

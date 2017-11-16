@@ -20,7 +20,7 @@ class model_pro_setting
 			// 页面风格
 			'page_style' => 'brass',
 			// 版权
-			'copyright' => '欧拓采购部',
+			'page_copyright' => '&copy; autoneum.com 欧拓采购部 2017',
 			// favicon
 			'favicon' => $pluginPath."/data/imgs/favicon.ico",
 			// LOGO图片url

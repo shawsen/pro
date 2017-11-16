@@ -7,7 +7,7 @@ define(function(require){
 		did = 'main-'+domid;
 		var code = '<div class="flowdiv" id="'+did+'"></div>'+
 		require('common/copyright').get();
-		jQuery('#'+domid).html(code);
+		jQuery('#'+domid).html(code).css({'background':'#eee'});
 		ajax.post('progress&action=detail',{pgid:f},function(res){
 			if (res.retcode!=0) {
 				var code = '<div style="color:red;margin:0 0 20px;">'+res.retmsg+'</div>';
@@ -20,9 +20,16 @@ define(function(require){
 
 	function show(data) {
 		var code = '<h1>'+data.progress_title+'</h1>'+
-			'<hr>';
-
+            '<h2>流程步骤</h2>'+
+            '<div id="flow-graph-div"></div>'+
+            '<h2>基本信息</h2>'+
+            '<div id="flow-form-div"></div>'+
+            '<h2>审批信息</h2>'+
+            '<div id="flow-audit-div"></div>';
 		jQuery('#'+did).html(code);
+        require('./graph').show('flow-graph-div',data);
+        require('./form').show('flow-form-div',data);
+        require('./audit').show('flow-audit-div',data);
 	};
 
 	return o;

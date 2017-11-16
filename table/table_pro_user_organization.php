@@ -25,13 +25,33 @@ class table_pro_user_organization extends discuz_table
 		$table_common_member = DB::table('common_member');
 		$table_pro_user_organization = DB::table('pro_user_organization');
 		$sql = <<<EOF
-SELECT a.uid,a.username,a.email,a.groupid,a.adminid,
-b.realname,b.group_name,b.supervisor_uid
+SELECT a.username,a.email,a.groupid,a.adminid,
+b.*
 FROM $table_common_member as a LEFT JOIN $table_pro_user_organization as b ON a.uid=b.uid
 WHERE a.uid=1
 EOF;
 		return DB::fetch_first($sql);
 	}
+
+    // 获取一批uid的详情
+    public function getUserMap(array &$uidmap) 
+    {/*{{{*/
+        $map = array();
+        if (empty($uidmap)) return $map;
+        $uids = array_keys($uidmap);
+		$table_common_member = DB::table('common_member');
+		$table_pro_user_organization = DB::table('pro_user_organization');
+        $sql = <<<EOF
+SELECT a.uid,realname,enname,group_name,supervisor_uid,a.email,a.username
+FROM $table_common_member as a LEFT JOIN $table_pro_user_organization as b ON a.uid=b.uid
+WHERE a.uid=1
+EOF;
+        $res = DB::fetch_all($sql);
+        foreach ($res as &$row) {
+            $map[$row['uid']] = $row;
+        }
+        return $map;
+    }/*}}}*/
         
 }
 

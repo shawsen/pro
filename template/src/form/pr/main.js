@@ -1,21 +1,39 @@
 define(function(require){
+require('../OAForm');
 /* PR单 */
 function PRForm(opts)
 {
-    var render = '';
-    var print = false;
-	var readonly = 0;
+    var domid;
     var prid = 0;
     var data = {};
 	var store;
     if (opts) {
-        if(opts.render) render=opts.render;
-        if(opts.print) print=opts.print;
+        this.construct(opts);
         if(opts.formid) prid=opts.formid;
-		if(opts.readonly) readonly=1;
+    }
+    var thiso=this;
+
+    // 加载PR单数据
+    this.beforeInit=function() {
+        if (prid==0) throw "此PR单不存在或已删除";
+        ajax.post("requirectl&action=prDetail",{prid:prid},function(res){
+            if (res.retcode==0) {
+                data=res.data;
+                if (data.status==dict.PRO_STATE_EDIT || data.status==dict.PRO_AUDIT_FAIL || data.status==dict.PRO_AUDIT_CANCEL) {
+                    if (opts.edit) {
+                        thiso.edit=1;
+                    }
+                }
+                if (data.status!=dict.PRO_AUDIT_SUCC) {
+                    thiso.print = false;
+                }
+            }
+        },true);
+        if (!data.prid) throw "此PR单不存在或已删除";
     }
 
-    function showFrom() {
+    this.showForm=function(domid) {
+        var render = domid;
         var ct = strtotime(data.ctime);
         var cdate = date('Y/m/d',ct);
         var code = '<div class="formdiv">'+
@@ -26,8 +44,9 @@ function PRForm(opts)
               '<label>申请日期: </label><span class="field">'+cdate+'</span>'+
               '<label style="float:right">编号(PR No.) <span class="field">'+data.prid+'</span></label>'+
             '</div>'+
+            '<table border="1" id="base-'+render+'"></table>'+
             '<table border="1" id="ims-'+render+'"></table>'+
-            '<table border="1" style="margin-top:-1px;">'+
+/*            '<table border="1">'+
               '<tr height="130">'+
                 '<td width="50%">申请人/部门<br>Originator/Dept.<span class="datespan"></span></td>'+
                 '<td width="25%">部门经理<br>Department Manager<span class="datespan"></span></td>'+
@@ -48,49 +67,44 @@ function PRForm(opts)
                 '</td>'+
               '</tr>'+
             '</table>'+
+*/
         '</div>';
-
-        if (!print) {
-            code += '<a href="'+dz.siteurl+'/plugin.php?id=pro:print&form=pr&formid='+prid+'" '+
-                    'class="mwt-btn mwt-btn-default mwt-btn-sm" target="_blank">打印</a>';
-        }
-		if (!readonly) {
-            code += '<a href="javascript:;" id="save-'+render+'"'+
-                    'class="mwt-btn mwt-btn-default mwt-btn-sm" target="_blank">保存</a>';
-		}
-        jQuery('#'+render).html(code);
+        jQuery('#'+domid).html(code);
+        var readonly = !this.edit;
+        require('./base').show('base-'+render,data,readonly);
 		require('./grid').show('ims-'+render,data,readonly);
-		// 保存
-		jQuery('#save-'+render).unbind('click').click(function(){
-			var items = require('./grid').getItems('ims-'+render);
-			var params = {
-				prid  : data.prid,
-				items : items
-			};
-			ajax.post('requirectl&action=prSave',params,function(res){
-				if (res.retcode!=0) mwt.notify(res.retmsg,1500,'danger');
-				else mwt.notify('已保存',1500,'success');
-			});
-
-		});
     }
-    
-    this.init = function() {
-        try {
-            if (prid==0) throw "此PR单不存在或已删除";
-            ajax.post("requirectl&action=prDetail",{prid:prid},function(res){
-                if (res.retcode!=0) {
-                    require('common/msg').showException(render,res.retmsg);
-                } else {
-                    data=res.data;
-                    showFrom();
-                }
-            });
-        } catch (e) {
-            require('common/msg').showException(render,e);
-        }
+
+    // 保存
+    this.save=function() {
+        setTimeout(function(){
+            mwt.notify('已保存',1500,'success');
+        },400);
+        /*
+        var params = {
+            prid  : data.prid,
+        };
+        ajax.post('requirectl&action=prSave',params,function(res){
+            if (res.retcode!=0) mwt.notify(res.retmsg,1500,'danger');
+            else mwt.notify('已保存',1500,'success');
+        });*/
+    };
+
+    // 提交发送
+    this.submit=function() {
+        ajax.post('requirectl&action=prSubmit',{prid:data.prid},function(res){
+            if (res.retcode!=0) mwt.notify(res.retmsg,1500,'danger');
+            else {
+                mwt.notify('提交成功',1500,'success');
+                setTimeout(function(){
+                    window.location.reload(); 
+                },1500);
+            }
+        });
     };
 }
+
+mwt.extends(PRForm,mwt.OAForm);
 
 return {
     create: function(domid,prid) {

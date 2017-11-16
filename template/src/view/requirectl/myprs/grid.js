@@ -1,5 +1,6 @@
 define(function(require){
 	/* grid.js, (c) 2017 mawentao */
+    var prproc = require('./prproc');
 	var store,grid,gridid;
     var state;
 
@@ -27,19 +28,32 @@ define(function(require){
 					return v;
 				}},
 				{head:"Title",dataIndex:"prname",align:'left',render:function(v,item){
-					return v;
+                    var url = '#/requirectl/pr~prid='+item.prid;
+					return '<a href="'+url+'">'+v+'</a>';
 				}},
 				{head:"创建时间",dataIndex:"ctime",width:120,align:'center',sort:true,render:timeRender},
 				{head:"状态",dataIndex:"status",width:100,align:'center',render:prStateRender},
-                
-				{head:"", dataIndex:"prid",width:120,align:'center',render:function(v,item){
+				{head:"审批流程",dataIndex:"progress_title",width:120,align:'center',render:function(v,item){
+                    if (!v) return '';
+                    return '<a class="grida" href="#/flow~f='+item.pgid+'">'+v+'</a>';
+                }},
+				{head:"操作", dataIndex:"prid",width:150,align:'center',render:function(v,item){
 					var editbtn = '<a class="grida" href="#/requirectl/pr~prid='+item.prid_code+'" '+
 							'name="editbtn" data-id="'+v+'">编辑</a>';
                     var submitbtn = '<a class="grida" href="javascript:;" '+
 							'name="submitbtn" data-id="'+v+'">提交</a>';
+                    var flowbtn = '<a class="grida" href="#/flow~f='+item.pgid+'" '+
+							'name="submitbtn" data-id="'+v+'">审批详情</a>';
+                    var cancelbtn = '<a class="grida" href="javascript:;"'+
+							'name="cancelbtn" data-id="'+v+'">撤销</a>';
                     var btns = [editbtn,submitbtn];
-					if (item.status==1) btns = [editbtn,submitbtn];
-					//if (item.status==2) btns = [];
+                    switch (parseInt(item.status)) {
+                        case dict.PRO_STATE_EDIT: btns=[editbtn,submitbtn]; break;
+                        case dict.PRO_AUDIT_SUCC: btns=[flowbtn]; break;
+                        case dict.PRO_AUDIT_TODO: btns=[flowbtn,cancelbtn]; break;
+                        case dict.PRO_AUDIT_FAIL: btns=[editbtn,submitbtn,flowbtn]; break;
+                        case dict.PRO_AUDIT_CANCEL: btns=[editbtn,submitbtn]; break;
+                    }
                     return btns.join("&nbsp;&nbsp;&nbsp;");
 				}}
 			]),
@@ -79,6 +93,15 @@ define(function(require){
 					}
 				});
 			});
+            // 撤销PR单
+            jQuery('[name=cancelbtn]').unbind('click').click(function(){
+                var prid = jQuery(this).data('id');
+                mwt.confirm('确定要撤销此PR单吗？',function(res){
+                    if (res) {
+                        prproc.cancel(prid,o.query);               
+                    }
+                });
+            });
 		});
 		o.query();
 	};

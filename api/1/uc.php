@@ -18,6 +18,8 @@ $actionlist = array(
 	'changepass' => array(),   //!< 修改密码
     'profile' => array(),      //!< 我的资料
     'profile_set' => array(),  //!< 设置个人资料
+
+    'userinfo' => array(),     //!< 查看任意一人的资料
 );
 ////////////////////////////////////
 $uid = $_G['uid'];
@@ -126,6 +128,15 @@ function profile_set()
     );  
     return C::t('common_member_profile')->update($uid,$data);
 }/*}}}*/
+
+// 查看用户信息
+function userinfo() {
+    $uid = pro_validate::getNCParameter('uid','uid','integer');
+    $res = C::t('#pro#pro_user_organization')->getUserOrganization($uid);
+    $res['avatar'] = avatar($uid,'middle',true);
+    return $res;
+}
+
 
 // vim600: sw=4 ts=4 fdm=marker syn=php
 ?>

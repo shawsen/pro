@@ -29,7 +29,7 @@ $action   = isset($_GET['action']) ? $_GET['action'] : "get";
 try {
     //////////////////////////////////////////////////
     $auth = C::t('#pro#pro_auth')->getByUid($uid);
-    if ($auth!=1) {
+    if ($auth==0) {
         throw new Exception("permission denied");
     }
     //////////////////////////////////////////////////
@@ -55,7 +55,9 @@ function prCancel(){return C::t('#pro#pro_pr')->submitCancel();}
 function prDetail()
 {
     $prid = pro_validate::getNCParameter('prid','prid','string');
-    $prid = C::m('#pro#pro_authcode')->decodeID($prid);
+    if (!is_numeric($prid)) {
+        $prid = C::m('#pro#pro_authcode')->decodeID($prid);
+    }
     return C::m('#pro#pro_pr')->getPRDetail($prid);
 }
 

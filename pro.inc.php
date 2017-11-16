@@ -17,8 +17,6 @@ if(!$_G['uid']){
 $uid = $_G['uid'];
 $auth = $uid==0 ? 0 : C::t('#pro#pro_auth')->getByUid($uid);
 
-
-
 // 设置
 $setting = C::m('#pro#pro_setting')->get();
 $page_style = $setting['page_style'];
@@ -29,6 +27,12 @@ if ($lang['code']=='en') {
 	$setting['page_title'] = "E-Bid System";
 	$setting['introduction'] = $setting['introduction_en'];
 }
+///////////////////////////////////////////
+if ($auth==0) {
+    include template("pro:forbid");
+    exit();
+}
+///////////////////////////////////////////
 
 // 导航列表
 $navlist = C::m('#pro#pro_nav_setting')->getenablelist();

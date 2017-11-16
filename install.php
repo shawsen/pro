@@ -57,8 +57,10 @@ $table = DB::table('pro_user_organization');
 $sql = "CREATE TABLE IF NOT EXISTS $table ". <<<EOF
 (
 `uid` mediumint(8) unsigned NOT NULL DEFAULT '0' COMMENT '用户ID',
+`staff_id` varchar(32) NOT NULL DEFAULT '' COMMENT '工号',
 `realname` varchar(32) NOT NULL DEFAULT '' COMMENT '真实姓名',
 `enname` varchar(32) NOT NULL DEFAULT '' COMMENT '英文名',
+`position_title` varchar(32) NOT NULL DEFAULT '' COMMENT '职位',
 `group_name` varchar(32) NOT NULL DEFAULT '' COMMENT '所属部门',
 `supervisor_uid` mediumint(8) unsigned NOT NULL DEFAULT '0' COMMENT '直接上级',
 `ctime` datetime NOT NULL DEFAULT "0000-00-00 00:00:00" comment '创建日期',
@@ -69,8 +71,10 @@ KEY `idx_supervisor_uid_isdel` (`supervisor_uid`,`isdel`)
 ) ENGINE=MyISAM COMMENT '人事组织关系表'
 EOF;
 runquery($sql);
-$sql = "INSERT IGNORE INTO $table (uid,realname,enname,group_name,supervisor_uid,ctime) VALUES ".
-       "(1,'李明','Li Ming','采购部',1,'$addtime')";
+$sql = "INSERT IGNORE INTO $table (uid,staff_id,realname,enname,position_title,group_name,supervisor_uid,ctime) VALUES ".
+       "(1,'D10001','李明','Li Ming','职员','生产部',1,'$addtime'),".
+       "(2,'D10002','陈媛媛','Anita Chen','采购员','采购部',3,'$addtime'),".
+       "(3,'D10003','李威','Wei Li','采购总监','采购部',3,'$addtime')";
 runquery($sql);
 /*}}}*/
 
@@ -87,9 +91,10 @@ $sql = "CREATE TABLE IF NOT EXISTS $table ". <<<EOF
 `status` tinyint(3) NOT NULL DEFAULT '1' COMMENT '状态(0:流程审批通过,1:审批中,2:审批驳回,7:已撤销)',
 `ctime` datetime NOT NULL DEFAULT "0000-00-00 00:00:00" comment '创建日期',
 `mtime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间', 
+`isdel` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '删除标志',
 PRIMARY KEY (`pgid`),
-KEY `idx_module_module_id` (`module`,`module_id`),
-KEY `idx_uid_status` (`origin_uid`,`status`)
+KEY `idx_module_module_id_isdel` (`module`,`module_id`,`isdel`),
+KEY `idx_uid_status_isdel` (`origin_uid`,`status`,`isdel`)
 ) ENGINE=MyISAM COMMENT '审批流程表'
 EOF;
 runquery($sql);
@@ -143,7 +148,8 @@ runquery($sql);
 // PR单审批流程
 $sql = "INSERT IGNORE INTO $table (tplid,module,porder,node_name,can_skip,utype,uid) VALUES ".<<<EOF
 (1,'#pro#pro_pr',1,'直接上级',0,1,0),
-(2,'#pro#pro_pr',2,'采购总监',0,0,1)
+(2,'#pro#pro_pr',2,'采购总监',0,0,1),
+(6,'#pro#pro_po',1,'采购总监审批',0,0,1)
 EOF;
 runquery($sql);
 /*}}}*/
@@ -187,8 +193,8 @@ $sql = "CREATE TABLE IF NOT EXISTS $table ". <<<EOF
 `prod_brand` varchar(64) NOT NULL DEFAULT '' COMMENT '品牌',
 `prod_style` varchar(64) NOT NULL DEFAULT '' COMMENT '规格',
 `item_unit` varchar(64) NOT NULL DEFAULT '' COMMENT '单位',
-`item_num` varchar(128) NOT NULL DEFAULT '' COMMENT '需求量',
-`item_unit_price` decimal(10,2) NOT NULL DEFAULT '0.00' COMMENT '单价(元)',
+`item_num` double unsigned NOT NULL DEFAULT '0' COMMENT '需求量',
+`item_unit_price` decimal(10,2) unsigned NOT NULL DEFAULT '0.00' COMMENT '单价(元)',
 `item_price_cny` varchar(16) NOT NULL DEFAULT '' COMMENT '币种',
 `exp_arrival_date` date NOT NULL DEFAULT '0000-00-00' COMMENT '预期送货日期',
 
@@ -224,7 +230,7 @@ runquery($sql);
 runquery("ALTER TABLE `$table` ENGINE=INNODB");
 /*}}}*/
 
-// PO
+// PO单主表
 $table = DB::table('pro_po');
 /*{{{*/ 
 $sql = "CREATE TABLE IF NOT EXISTS $table ". <<<EOF
@@ -232,8 +238,14 @@ $sql = "CREATE TABLE IF NOT EXISTS $table ". <<<EOF
 `poid` bigint unsigned NOT NULL AUTO_INCREMENT COMMENT 'PO单编号(自增主键)',
 `prid` bigint unsigned NOT NULL DEFAULT '0' COMMENT '关联的PR单号',
 `poname` varchar(128) NOT NULL DEFAULT '' COMMENT 'PO单名称',
+`supplier_id` bigint(20) unsigned NOT NULL DEFAULT '0' COMMENT '供应商ID',
 `addrid` bigint unsigned NOT NULL DEFAULT '0' COMMENT '关联的送货地址ID',
-`status` tinyint(3) NOT NULL DEFAULT '1' COMMENT '状态(1:编辑中,2:审核中,)',
+`price_total` decimal(10,2) unsigned NOT NULL DEFAULT '0.00' COMMENT '总价',
+`price_cny` varchar(16) NOT NULL DEFAULT '元' COMMENT '币种',
+`arrival_date` date NOT NULL DEFAULT '0000-00-00' COMMENT '送货日期',
+`status` tinyint(3) NOT NULL DEFAULT '1' COMMENT '状态',
+`pgid` bigint unsigned NOT NULL DEFAULT '0' COMMENT '流程ID', 
+`submit_time` datetime NOT NULL DEFAULT "0000-00-00 00:00:00" comment '提交日期',
 `create_uid` mediumint(8) unsigned NOT NULL DEFAULT '0' COMMENT '创建者uid',
 `ctime` datetime NOT NULL DEFAULT "0000-00-00 00:00:00" comment '创建日期',
 `mtime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间', 
@@ -244,6 +256,37 @@ KEY `idx_isdel_status` (`isdel`,`status`)
 ) ENGINE=MyISAM AUTO_INCREMENT=20000001 COMMENT 'PO单主表'
 EOF;
 runquery($sql);
+runquery("ALTER TABLE `$table` ENGINE=INNODB");
+$sql = "INSERT IGNORE INTO $table (poid,poname,create_uid,ctime,isdel) VALUES ".
+       "(200001,'第一个PO单',0,'$addtime',1)";
+runquery($sql);
+/*}}}*/
+
+// PO单采购项列表
+$table = DB::table('pro_po_items');
+/*{{{*/
+$sql = "CREATE TABLE IF NOT EXISTS $table ". <<<EOF
+(
+`item_id` bigint unsigned NOT NULL AUTO_INCREMENT COMMENT 'PR项编号(自增主键)',
+`poid` bigint unsigned NOT NULL DEFAULT '0' COMMENT '所属的PO单编号',
+`pr_item_id` bigint unsigned NOT NULL DEFAULT '0' COMMENT '关联的PR采购项ID',
+`prod_info` varchar(128) NOT NULL DEFAULT '' COMMENT '产品描述',
+`use_info` varchar(128) NOT NULL DEFAULT '' COMMENT '用途或项目描述',
+`prod_brand` varchar(64) NOT NULL DEFAULT '' COMMENT '品牌',
+`prod_style` varchar(64) NOT NULL DEFAULT '' COMMENT '规格',
+`item_unit` varchar(64) NOT NULL DEFAULT '' COMMENT '单位',
+`item_num` double unsigned NOT NULL DEFAULT '0' COMMENT '需求量',
+`item_unit_price` decimal(10,2) unsigned NOT NULL DEFAULT '0.00' COMMENT '单价(元)',
+`ctime` datetime NOT NULL DEFAULT "0000-00-00 00:00:00" comment '创建日期',
+`mtime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间', 
+`isdel` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '删除标志(0:未删,1:已删)',
+PRIMARY KEY (`item_id`),
+KEY `idx_isdel_poid` (`isdel`,`poid`),
+UNIQUE KEY `uk_pr_item_id_poid` (`pr_item_id`,`poid`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 COMMENT 'PO单采购项列表'
+EOF;
+runquery($sql);
+runquery("ALTER TABLE `$table` ENGINE=INNODB");
 /*}}}*/
 
 
