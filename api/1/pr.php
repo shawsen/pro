@@ -14,6 +14,10 @@ require_once EBID_PLUGIN_PATH."/class/env.class.php";
 // action的用户组列表（空表示全部用户组）
 $actionlist = array(
     'create' => array(),
+    'save' => array(),
+    'submit' => array(),
+    'submitCancel' => array(),
+    'remove' => array(),
     'queryMine' => array(),
     'saveItem' => array(),
     'removeItem' => array(),
@@ -41,6 +45,10 @@ try {
 }
 
 function create() { return C::t('#pro#pro_pr')->create(); }
+function save() { return C::t('#pro#pro_pr')->save(); }
+function submit() { return C::t('#pro#pro_pr')->submit(); }
+function submitCancel() { return C::t('#pro#pro_pr')->submitCancel(); }
+function remove() { return C::t('#pro#pro_pr')->remove(); }
 function queryMine() { return C::t('#pro#pro_pr')->queryByCreator(); }
 function saveItem(){ return C::t('#pro#pro_pr_items')->save(); }
 function removeItem(){ return C::t('#pro#pro_pr_items')->removeItem(); }

@@ -19,6 +19,14 @@ define(function(require){
 	};
 
 	function show(data) {
+        if (data.status==dict.PRO_AUDIT_CANCEL) {
+            var code = '<h1>'+data.progress_title+'</h1>'+
+                '<div id="msg-'+did+'"></div>';
+            jQuery('#'+did).html(code);
+            msg.showException('msg-'+did,'此流程已撤销');
+            return;
+        }
+
 		var code = '<h1>'+data.progress_title+'</h1>'+
             '<h2>流程步骤</h2>'+
             '<div id="flow-graph-div"></div>'+

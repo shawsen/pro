@@ -88,23 +88,17 @@ EOF;
         $item_id = pro_validate::getNCParameter('item_id','item_id','integer');
         $prid = pro_validate::getNCParameter('prid','prid','integer');
         $data = array (
-            'prid' => $prid,
-            'prod_info' => pro_validate::getNCParameter('prod_info','prod_info','string',100),
-            'use_info' => pro_validate::getNCParameter('use_info','use_info','string',100),
+            'prid'       => $prid,
+            'prod_info'  => pro_validate::getNCParameter('prod_info','prod_info','string',100),
+            'use_info'   => pro_validate::getNCParameter('use_info','use_info','string',100),
             'prod_brand' => pro_validate::getNCParameter('prod_brand','prod_brand','string',60),
             'prod_style' => pro_validate::getNCParameter('prod_style','prod_style','string',60),
-            'item_unit' => pro_validate::getNCParameter('item_unit','item_unit','string',60),
-            'item_num' => pro_validate::getNCParameter('item_num','item_num','number'),
+            'item_unit'  => pro_validate::getNCParameter('item_unit','item_unit','string',60),
+            'item_num'   => pro_validate::getNCParameter('item_num','item_num','number'),
             'item_unit_price' => pro_validate::getNCParameter('item_unit_price','item_unit_price','number'),
         );
         //1. 操作合法性检查
-        $pr = C::t('#pro#pro_pr')->get_by_pk($prid);
-        if (empty($pr)) {
-            throw new Exception("PR单不存在或已删除");   
-        }
-        if ($pr['create_uid']!=$_G['uid']) {
-            throw new Exception("你无法保存此采购项");
-        }
+        $pr = C::t('#pro#pro_pr')->getEditablePR($prid);
         //2. 插入或更新
         if ($item_id==0) {
             $data['ctime'] = date('Y-m-d H:i:s');

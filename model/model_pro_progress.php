@@ -44,6 +44,10 @@ class model_pro_progress
     // 激活流程下一个节点
     public function activeNextNode($pgid)
     {/*{{{*/
+        $progress = C::t('#pro#pro_progress')->get_by_pk($pgid);
+        if ($progress['isdel']!=0) {
+            return;
+        }
         $t_pro_progress_nodes = C::t('#pro#pro_progress_nodes');
         $nodes = $t_pro_progress_nodes->getNodesByPgid($pgid);
         foreach ($nodes as &$node) {
@@ -54,7 +58,16 @@ class model_pro_progress
                     'active_time' => date('Y-m-d H:i:s'),
                 );
                 $t_pro_progress_nodes->update($pgnodeid,$data);
-                //TODO: 通知审批人
+                //////////////////////////////////////////////////
+                // 通知审批人
+                $userinfo = C::t('#pro#pro_user_organization')->getUserOrganization($node['uid']);
+                $tomail = $userinfo['email'];
+                $title = '【请审批】'.$progress['progress_title'];
+                $url = pro_env::get_siteurl()."/plugin.php?id=pro#/flow~f=$pgid";
+                $content = "<a href='$url'>".$progress['progress_title']."</a> 当前需要您审批，请点击以下链接进行审批：".
+                    "<br><br><a href='$url'>$url</a>";
+                C::m('#pro#pro_mail')->send_email($tomail,$title,$content);
+                //////////////////////////////////////////////////
                 return true;
             }
         }
@@ -66,20 +79,29 @@ class model_pro_progress
         //1. 获取pgid详情
         $t_pro_progress = C::t('#pro#pro_progress');
         $record = $t_pro_progress->get_by_pk($pgid);
-        //2. 审批通过
+        //2. 审批结果
         $data = array (
             'status' => $status,
         );
         $t_pro_progress->update($pgid,$data);
         //3. 流程关联的PRPO单
         C::t($record['module'])->audit($record['module_id'],$status,$feedback);
+        ////////////////////////////////////////////////////////////
         //4. 通知流程发起人审批结果
-        //TODO: ...        
+        $progress_title = $record['progress_title'];
+        $userinfo = C::t('#pro#pro_user_organization')->getUserOrganization($record['origin_uid']);
+        $tomail = $userinfo['email'];
+        $ff = $status==PRO_AUDIT_SUCC ? '通过' : '驳回';
+        $title = '【审批'.$ff.'】'.$progress_title;
+        $url = pro_env::get_siteurl()."/plugin.php?id=pro#/flow~f=$pgid";
+        $content = "<a href='$url'>".$progress_title."</a> 已审批$ff: $feedback";
+        C::m('#pro#pro_mail')->send_email($tomail,$title,$content);
+        ////////////////////////////////////////////////////////////
     }/*}}}*/
 
 	// 流程详情
 	public function getDetail($pgid) 
-	{
+	{/*{{{*/
 		$progressInfo = C::t('#pro#pro_progress')->get_by_pk($pgid);
 		if (empty($progressInfo) || $progressInfo['module_id']==0) {
 			throw new Exception('流程不存在或已删除');
@@ -95,9 +117,8 @@ class model_pro_progress
         foreach ($progressInfo['nodes'] as &$node) {
             $node['userinfo'] = $umap[$node['uid']];
         }
-
 		return $progressInfo;
-	}
+	}/*}}}*/
 }
 // vim600: sw=4 ts=4 fdm=marker syn=php
 ?>

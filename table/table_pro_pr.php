@@ -102,15 +102,21 @@ EOF;
     {/*{{{*/
         global $_G;
         $uid = $_G['uid'];
+        //1. 避免创建多个PR单
+        $sql = "SELECT * FROM ".DB::table($this->_table)." WHERE create_uid='$uid' AND status=0";
+        $item = DB::fetch_first($sql);
+        if (!empty($item)) {
+            return C::m('#pro#pro_authcode')->encodeID($item['prid']);
+        }
+        //2. 创建PR单
         $username = $_G['username'];
         $prname = $username."采购申请单".date('YmdHi');
-        $status = 1;
         $data = array (
-            'prname' => $prname,
-            'status' => $status,
+            'prname'     => $prname,
+            'status'     => 0,
             'create_uid' => $uid,
-            'ctime' => date('Y-m-d H:i:s'),
-            'isdel' => 0,
+            'ctime'      => date('Y-m-d H:i:s'),
+            'isdel'      => 0,
         );
         // log
         $prid = $this->insert($data,true);
@@ -122,32 +128,38 @@ EOF;
         return C::m('#pro#pro_authcode')->encodeID($prid);
     }/*}}}*/
 
-	// 保存PR单
-	public function save()
+    // 获取可编辑的PR单记录
+    public function getEditablePR($prid)
     {/*{{{*/
         global $_G;
         $uid = $_G['uid'];
-        $prid = pro_validate::getNCParameter('prid','prid','integer');
-        // op secure check
         $item = $this->get_by_pk($prid);
+        $status = $item['status'];
         if (empty($item) || $item['isdel']!=0) {
             throw new Exception("PR单不存在或已删除");
         }
         if ($item['create_uid']!=$uid) {
-            throw new Exception("你不能保存此PR单");
+            throw new Exception("你不能编辑此PR单");
         }
-        if ($item['status']!=1) {
-            throw new Exception("此PR单已提交，不可编辑");
+        $unedits = [PRO_AUDIT_SUCC,PRO_AUDIT_TODO];
+        if (in_array($item['status'],$unedits)) {
+            throw new Exception("此PR单已提交");
         }
-        // op
-		C::t('#pro#pro_pr_items')->saveBatch();
-/*
-        $data = array (
-            'status' => $status,
-            'submit_time' => date('Y-m-d H:i:s'),
-        );
-        $this->update($prid,$data);
-*/
+        ////////////////////////////////////////////////////////////
+        // 编辑过的PR单进入编辑状态
+        if ($item['status']==0) {
+            $this->update($prid,array('status'=>PRO_STATE_EDIT));
+        }
+        ////////////////////////////////////////////////////////////
+        return $item;
+    }/*}}}*/
+
+	// 保存PR单
+	public function save()
+    {/*{{{*/
+        $prid = pro_validate::getNCParameter('prid','prid','integer');
+        $pr = $this->getEditablePR($prid);
+        $status = $pr['status'];
         // log
         $log = $_G['username']." 保存了PR单[$prid]";
         C::t('#pro#pro_pr_log')->write($prid,$status,$log);
@@ -161,29 +173,24 @@ EOF;
         $uid = $_G['uid'];
         $prid = pro_validate::getNCParameter('prid','prid','integer');
         //1. 操作合法性校验
-        $item = $this->get_by_pk($prid);
-        if (empty($item) || $item['isdel']!=0) {
-            throw new Exception("PR单不存在或已删除");
-        }
-        if ($item['create_uid']!=$uid) {
-            throw new Exception("你不能提交此PR单");
-        }
-        $subedStates = array(PRO_AUDIT_SUCC,PRO_AUDIT_TODO);
-        if (in_array($item['status'],$subedStates)) {
-            throw new Exception("此PR单已提交");
-        }
+        $pr = $this->getEditablePR($prid);  //!< 处于编辑状态的PR单才可提交
+        //2. 统计PR单总价
         $items = C::t('#pro#pro_pr_items')->getAllByPrid($prid);
         if (empty($items)) {
             throw new Exception("此PR单的采购项为空");
         }
-        //2. 创建审批流程
-		//$uo = C::m('#pro#pro_user_organization')->getByUid($uid);
-		$title = "PR单[$prid]审批流程";
+        $totalPrice = 0;
+        foreach ($items as &$item) {
+            $totalPrice += floatval($item['item_unit_price']) * floatval($item['item_num']);
+        }
+        //3. 创建审批流程
+		$title = "PR单[$prid]审批流程_".$_G['username'];
 		$pgid = C::m('#pro#pro_progress')->create('#pro#pro_pr',$prid,$title);
 		//3. 更改状态
         $status = PRO_AUDIT_TODO;
         $data = array (
 			'pgid'        => $pgid,
+            'total_price' => $totalPrice,
             'status'      => $status,
             'submit_time' => date('Y-m-d H:i:s'),
         );
@@ -225,7 +232,23 @@ EOF;
         C::t('#pro#pro_pr_log')->write($prid,$status,$log);
         return $prid;
     }/*}}}*/
-        
+
+    // 删除PR单
+    public function remove()
+    {/*{{{*/
+        $prid = pro_validate::getNCParameter('prid','prid','integer');
+        $pr = $this->getEditablePR($prid);  //!< 处于编辑状态的PR单才可删除
+        $data = array (
+            'isdel' => 1
+        );
+        $this->update($prid,$data);
+        // log
+        $log = $_G['username']." 删除了PR单[$prid]";
+        C::t('#pro#pro_pr_log')->write($prid,$status,$log);
+        return $prid;
+    }/*}}}*/
+
+
     // 审批PR单
     public function audit($prid,$status,$feedback)
     {/*{{{*/

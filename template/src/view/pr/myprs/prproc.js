@@ -2,14 +2,9 @@ define(function(require){
     /* PR单处理 */
     var o={};
 
-
-    // 撤销PR单
-    o.cancel=function(prid,callback) {
-        var params = {
-            prid: prid
-        };
-        print_r(params);
-        ajax.post('requirectl&action=prCancel',params,function(res){
+    // 提交PR单
+    o.submit=function(prid,callback) {  
+         ajax.post('pr&action=submit',{prid:prid},function(res){
             if (res.retcode!=0) {
                 mwt.notify(res.retmsg,1500,'danger');
                 return;
@@ -17,6 +12,30 @@ define(function(require){
             if (callback) {callback();}
         });
     };
+
+    // 撤销PR单
+    o.cancel=function(prid,callback) {
+        ajax.post('pr&action=submitCancel',{prid:prid},function(res){
+            if (res.retcode!=0) {
+                mwt.notify(res.retmsg,1500,'danger');
+                return;
+            }
+            if (callback) {callback();}
+        });
+    };
+
+    // 删除PR单
+    o.remove=function(prid,callback) {
+        ajax.post('pr&action=remove',{prid:prid},function(res){
+            if (res.retcode!=0) {
+                mwt.notify(res.retmsg,1500,'danger');
+                return;
+            }
+            if (callback) {callback();}
+        });
+    };
+
+    
 
     return o;
 });

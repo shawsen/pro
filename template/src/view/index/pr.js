@@ -52,8 +52,8 @@ define(function(require){
         gridid = 'grid-'+domid;
         var tabs = [
             ['待提交'],
-            ['审核中'],
-            ['已审核']
+            ['审批中'],
+            ['已审批']
         ];
         var tabcode = [];
         for (var i=0; i<tabs.length; ++i) {

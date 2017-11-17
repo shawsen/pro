@@ -19,10 +19,9 @@ function PRForm(opts)
         ajax.post("requirectl&action=prDetail",{prid:prid},function(res){
             if (res.retcode==0) {
                 data=res.data;
-                if (data.status==dict.PRO_STATE_EDIT || data.status==dict.PRO_AUDIT_FAIL || data.status==dict.PRO_AUDIT_CANCEL) {
-                    if (opts.edit) {
-                        thiso.edit=1;
-                    }
+                var editStates = [0,dict.PRO_STATE_EDIT,dict.PRO_AUDIT_FAIL,dict.PRO_AUDIT_CANCEL];
+                if (in_array(data.status,editStates) && opts.edit) {
+                    thiso.edit=1;
                 }
                 if (data.status!=dict.PRO_AUDIT_SUCC) {
                     thiso.print = false;
@@ -77,22 +76,18 @@ function PRForm(opts)
 
     // 保存
     this.save=function() {
-        setTimeout(function(){
-            mwt.notify('已保存',1500,'success');
-        },400);
-        /*
         var params = {
-            prid  : data.prid,
+            prid  : data.prid
         };
-        ajax.post('requirectl&action=prSave',params,function(res){
+        ajax.post('pr&action=save',params,function(res){
             if (res.retcode!=0) mwt.notify(res.retmsg,1500,'danger');
             else mwt.notify('已保存',1500,'success');
-        });*/
+        });
     };
 
     // 提交发送
     this.submit=function() {
-        ajax.post('requirectl&action=prSubmit',{prid:data.prid},function(res){
+        ajax.post('pr&action=submit',{prid:data.prid},function(res){
             if (res.retcode!=0) mwt.notify(res.retmsg,1500,'danger');
             else {
                 mwt.notify('提交成功',1500,'success');
