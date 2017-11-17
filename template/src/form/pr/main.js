@@ -87,7 +87,9 @@ function PRForm(opts)
 
     // 提交发送
     this.submit=function() {
+		var msgid = mwt.notify('正在提交...',0,'loading');
         ajax.post('pr&action=submit',{prid:data.prid},function(res){
+			mwt.notify_destroy(msgid);
             if (res.retcode!=0) mwt.notify(res.retmsg,1500,'danger');
             else {
                 mwt.notify('提交成功',1500,'success');

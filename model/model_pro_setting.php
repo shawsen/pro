@@ -26,7 +26,7 @@ class model_pro_setting
 			// LOGO图片url
 			'logourl' => $pluginPath."/data/imgs/logo.png",
 			// Title
-			'page_title' => '欧拓采购PRO系统',
+			'page_title' => '欧拓采购平台',
 		);
 
 		return $setting;

@@ -24,7 +24,7 @@ $pluginPath = pro_env::get_plugin_path();
 $ajaxapi = $pluginPath."/index.php?version=4&module=";
 $setting['introduction'] = $setting['introduction_zh'];
 if ($lang['code']=='en') {
-	$setting['page_title'] = "E-Bid System";
+	$setting['page_title'] = "PRPO System";
 	$setting['introduction'] = $setting['introduction_en'];
 }
 ///////////////////////////////////////////
@@ -42,3 +42,4 @@ $filename = basename(__FILE__);
 list($controller) = explode('.',$filename);
 include template("pro:".strtolower($controller));
 C::t('#pro#pro_log')->write("visit pro:pro");
+pro_env::getlog()->trace("pv [#$uid"."#".$_G['username']."]");

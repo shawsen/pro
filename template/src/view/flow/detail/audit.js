@@ -82,7 +82,9 @@ define(function(require){
     }
 
     function subAudit(params) {
+		var msgid = mwt.notify('正在提交审批...',0,'loading');
         ajax.post('progress&action=audit',params,function(res){
+			mwt.notify_destroy(msgid);
             if (res.retcode!=0) {
                 mwt.alert(res.retmsg);
             } else {

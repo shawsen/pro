@@ -56,15 +56,19 @@ class model_pro_po
         if (empty($items['root'])) {
             throw new Exception("此PO单的采购列表为空");
         }
+		$totalPrice = 0;
+        foreach ($items as &$item) {
+            $totalPrice += floatval($item['item_unit_price']) * floatval($item['item_num']);
+        }
         //3. 创建审批流程
-		$uo = C::m('#pro#pro_user_organization')->getByUid($uid);
-		$title = $uo['realname']."_PO单[$poid]审批流程";
-		$pgid = C::m('#pro#pro_progress')->create('#pro#pro_po',$poid,$title);
+		$title = "PO单[$poid]审批流程_".$_G['username'];
+		$pgid  = C::m('#pro#pro_progress')->create('#pro#pro_po',$poid,$title);
 		//3. 更改状态
         $status = PRO_AUDIT_TODO;
         $data = array (
 			'pgid'        => $pgid,
             'status'      => $status,
+			'price_total' => $totalPrice,
             'submit_time' => date('Y-m-d H:i:s'),
         );
         $t_pro_po->update($poid,$data);

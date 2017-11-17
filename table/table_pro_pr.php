@@ -141,7 +141,7 @@ EOF;
         if ($item['create_uid']!=$uid) {
             throw new Exception("你不能编辑此PR单");
         }
-        $unedits = [PRO_AUDIT_SUCC,PRO_AUDIT_TODO];
+        $unedits = array(PRO_AUDIT_SUCC,PRO_AUDIT_TODO);
         if (in_array($item['status'],$unedits)) {
             throw new Exception("此PR单已提交");
         }

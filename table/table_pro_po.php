@@ -100,6 +100,26 @@ EOF;
         return C::m('#pro#pro_authcode')->encodeID($poid);
     }/*}}}*/
 
+    // 获取可编辑的PO单记录
+    public function getEditablePO($poid)
+    {/*{{{*/
+        global $_G;
+        $uid = $_G['uid'];
+        $item = $this->get_by_pk($poid);
+        $status = $item['status'];
+        if (empty($item) || $item['isdel']!=0) {
+            throw new Exception("PO单不存在或已删除");
+        }
+        if ($item['create_uid']!=$uid) {
+            throw new Exception("你不能保存此PO单");
+        }
+        $unedits = array(PRO_AUDIT_SUCC,PRO_AUDIT_TODO);
+        if (in_array($item['status'],$unedits)) {
+            throw new Exception("此PO单已提交，不可编辑");
+        }
+        return $item;
+    }/*}}}*/
+
     // 编辑检查
     public function editCheck($poid)
     {/*{{{*/
@@ -113,7 +133,7 @@ EOF;
         if ($item['create_uid']!=$uid) {
             throw new Exception("你不能保存此PO单");
         }
-        $unedits = [PRO_AUDIT_SUCC,PRO_AUDIT_TODO];
+        $unedits = array(PRO_AUDIT_SUCC,PRO_AUDIT_TODO);
         if (in_array($item['status'],$unedits)) {
             throw new Exception("此PO单已提交，不可编辑");
         }
@@ -136,7 +156,7 @@ EOF;
         if ($item['create_uid']!=$uid) {
             throw new Exception("你不能保存此PR单");
         }
-        $unedits = [PRO_AUDIT_SUCC,PRO_AUDIT_TODO];
+        $unedits = array(PRO_AUDIT_SUCC,PRO_AUDIT_TODO);
         if (in_array($item['status'],$unedits)) {
             throw new Exception("此PO单已提交，不可编辑");
         }
@@ -182,25 +202,15 @@ EOF;
         return $this->update($poid,$data);
     }/*}}}*/
 
-    // 提交PR单
+    // 提交PO单
     public function submit()
     {/*{{{*/
         global $_G;
         $uid = $_G['uid'];
         $poid = pro_validate::getNCParameter('poid','poid','integer');
         //1. 操作合法性校验
-        $item = $this->get_by_pk($poid);
-        if (empty($item) || $item['isdel']!=0) {
-            throw new Exception("PR单不存在或已删除");
-        }
-        if ($item['create_uid']!=$uid) {
-            throw new Exception("你不能提交此PR单");
-        }
-        $subedStates = array(PRO_AUDIT_SUCC,PRO_AUDIT_TODO);
-        if (in_array($item['status'],$subedStates)) {
-            throw new Exception("此PR单已提交");
-        }
-        $items = C::t('#pro#pro_po_items')->getAllByPrid($poid);
+        $item = $this->getEditablePR($poid);  //!< 处于编辑状态的PO单才可提交
+        $items = C::t('#pro#pro_po_items')->getAllByPoid($poid);
         if (empty($items)) {
             throw new Exception("此PR单的采购项为空");
         }

@@ -75,7 +75,9 @@ function POForm(opts)
 
     // 提交发送
     this.submit=function() {
+		var msgid = mwt.notify('正在提交...',0,'loading');
         ajax.post('po&action=submit',{poid:data.poid},function(res){
+			mwt.notify_destroy(msgid);
             if (res.retcode!=0) mwt.notify(res.retmsg,1500,'danger');
             else {
                 mwt.notify('提交成功',1500,'success');

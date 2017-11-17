@@ -1,5 +1,5 @@
 <?php
-if (!defined('IN_EBID_API')) {
+if (!defined('IN_PRO_API')) {
     exit('Access Denied');
 }
 /**
@@ -8,7 +8,7 @@ if (!defined('IN_EBID_API')) {
 require './source/class/class_core.php';
 $discuz = C::app();
 $discuz->init();
-require_once EBID_PLUGIN_PATH."/class/env.class.php";
+require_once PRO_PLUGIN_PATH."/class/env.class.php";
 
 ////////////////////////////////////
 // action的用户组列表（空表示全部用户组）

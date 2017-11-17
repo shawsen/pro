@@ -1,6 +1,6 @@
 define(function(require){
 	/* grid.js, (c) 2017 mawentao */
-    var prproc = require('./prproc');
+    var poproc = require('./poproc');
 	var store,grid,gridid;
     var state;
 
@@ -41,13 +41,13 @@ define(function(require){
                 }},
 				{head:"创建时间",dataIndex:"ctime",width:120,align:'center',sort:true,render:timeRender},
 				{head:"状态",dataIndex:"status",width:100,align:'center',render:prStateRender},
-				{head:"操作", dataIndex:"prid",width:150,align:'right',render:function(v,item){
+				{head:"操作", dataIndex:"poid",width:150,align:'right',render:function(v,item){
 					var editbtn = '<a class="grida" href="#/requirectl/pr~prid='+item.prid_code+'" '+
 							'name="editbtn" data-id="'+v+'">编辑</a>';
-                    var submitbtn = '<a class="grida" href="javascript:;" '+
+                    var submitbtn = '<a class="mwt-btn mwt-btn-default mwt-btn-xs" href="javascript:;" '+
 							'name="submitbtn" data-id="'+v+'">提交</a>';
                     var flowbtn = '<a class="grida" href="#/flow~f='+item.pgid+'" '+
-							'name="submitbtn" data-id="'+v+'">审批详情</a>';
+							'name="flowbtn" data-id="'+v+'">审批详情</a>';
                     var cancelbtn = '<a class="grida" href="javascript:;"'+
 							'name="cancelbtn" data-id="'+v+'">撤销</a>';
                     var btns = [editbtn,submitbtn];
@@ -55,7 +55,7 @@ define(function(require){
                         case dict.PRO_STATE_EDIT: btns=[editbtn,submitbtn]; break;
                         case dict.PRO_AUDIT_SUCC: btns=[flowbtn]; break;
                         case dict.PRO_AUDIT_TODO: btns=[flowbtn,cancelbtn]; break;
-                        case dict.PRO_AUDIT_FAIL: btns=[editbtn,submitbtn,flowbtn]; break;
+                        case dict.PRO_AUDIT_FAIL: btns=[editbtn,submitbtn]; break;
                         case dict.PRO_AUDIT_CANCEL: btns=[editbtn,submitbtn]; break;
                     }
                     return btns.join("&nbsp;&nbsp;&nbsp;");
@@ -81,24 +81,21 @@ define(function(require){
                     }
                 });
 			});
-			// 提交PR单
+			// 提交PO单
 			jQuery('[name=submitbtn]').unbind('click').click(function(){
-				var params = {
-					prid: jQuery(this).data('id')
-				};
-				ajax.post('requirectl&action=prSubmit',params,function(res){
-					if (res.retcode!=0) mwt.notify(res.retmsg,1500,'danger');
-					else {
-						o.query();
-					}
-				});
+                var poid = jQuery(this).data('id');
+                mwt.confirm('确定要提交此PO单吗？',function(res){
+                    if (res) {
+                        poproc.submit(poid,o.query);
+                    }
+                });
 			});
             // 撤销PR单
             jQuery('[name=cancelbtn]').unbind('click').click(function(){
                 var prid = jQuery(this).data('id');
                 mwt.confirm('确定要撤销此PR单吗？',function(res){
                     if (res) {
-                        prproc.cancel(prid,o.query);               
+                        poproc.cancel(prid,o.query);               
                     }
                 });
             });

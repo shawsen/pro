@@ -77,6 +77,5 @@ mwt.OAForm=function(opt)
     this.showForm=function(domid){};
     this.save=function(){};
     this.submit=function(){};
-    this.print=function(){};
 };
 MWT.extends(MWT.OAForm, MWT.Event);

@@ -78,6 +78,16 @@ EOF;
         return $return;
     }/*}}}*/
 
+	// 获取PO单所有有效项目
+	public function getAllByPoid($poid)
+	{/*{{{*/
+        $where = "isdel=0 AND poid='$prid'";
+        $table_this = DB::table($this->_table);
+        $sql = "SELECT * FROM $table_this WHERE $where";
+        return DB::fetch_all($sql);
+	}/*}}}*/
+
+
     // 保存单个采购项
     public function saveItem()
 	{/*{{{*/

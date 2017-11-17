@@ -335,7 +335,7 @@ $sql = "INSERT IGNORE INTO $table (supplier_id,company_name,company_short_name,c
 'http://sh.qiyexinyong.org/corp-310227001413156.html','王宝兴','',
 '上海逸森电子技术有限公司是一家新兴的信息技术服务公司，我们专注于企业客户的产品销售、解决方案、系统集成、并提供从维护型到顾问型的系列化专业服务。',
 '电子技术领域内的技术开发、技术服务；计算机软硬件（除计算机信息系统安全专用产品）、通讯器材、电子产品、办公自动化设备、家用电器、汽摩配件、建筑装潢材料（除危险品）、化工产品（除危险化学品、监控化学品、烟花爆竹、民用爆炸物品、易制毒化学品）批发零售；商务信息咨询；建筑装潢设计；设计、制作、利用自有媒体发布各类广告。 【企业经营涉及行政许可的，凭许可证件经营】',
-1,
+0,
 1,'','$addtime','$addtime'
 )
 EOF;
@@ -361,6 +361,10 @@ $sql = "CREATE TABLE IF NOT EXISTS $table ". <<<EOF
 PRIMARY KEY (`addrid`),
 KEY `idx_isdel` (`isdel`,`create_uid`)
 ) ENGINE=MyISAM AUTO_INCREMENT=1 COMMENT '地址表'
+EOF;
+runquery($sql);
+$sql = "INSERT IGNORE INTO $table (addrid,addrtitle,address,contact,tel,zipcode,displayorder,create_uid,ctime) values ".<<<EOF
+(1,'上海总部','上海市普陀区银杏路659号10号楼','Anita Chen','+86 135 2444 7996','201802',1,1,'$addtime')
 EOF;
 runquery($sql);
 /*}}}*/
